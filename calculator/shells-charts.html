@@ -428,7 +428,8 @@
           <div class="card"><h2>Гильзы при доле клана</h2><div class="chart-wrap"><canvas id="chartBrawlAnShells"></canvas></div></div>
           <div class="card"><h2>Казна и влияние</h2><div class="chart-wrap"><canvas id="chartBrawlAnClan"></canvas></div></div>
           <div class="card"><h2>Материалы при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnMats"></canvas></div></div>
-          <div class="card"><h2>Банк / этап</h2><div class="chart-wrap"><canvas id="chartBrawlAnPool"></canvas></div></div>
+          <div class="card"><h2>Ресурсы за неделю</h2><div class="chart-wrap"><canvas id="chartBrawlAnWeek"></canvas></div></div>
+          <div class="card"><h2>Гильзы · этап → неделя</h2><div class="chart-wrap"><canvas id="chartBrawlAnPace"></canvas></div></div>
           <div class="card wide"><h2>Было → Сейчас</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnDelta"></canvas></div></div>
           <div class="card wide"><h2>Детализация потасовок</h2><table id="brawlRows"></table></div>
         </div>
@@ -494,7 +495,7 @@
     const chartScopes = {
       avg: ['chartAvgWeek', 'chartAvgTourDay', 'chartAvgBrawlDay', 'chartAvgTreasury'],
       calc: ['chartTierCompare', 'chartWeekly', 'chartCumul'],
-      brawl: ['chartBrawlAnShells', 'chartBrawlAnClan', 'chartBrawlAnMats', 'chartBrawlAnPool', 'chartBrawlAnDelta'],
+      brawl: ['chartBrawlAnShells', 'chartBrawlAnClan', 'chartBrawlAnMats', 'chartBrawlAnWeek', 'chartBrawlAnPace', 'chartBrawlAnDelta'],
       clan: ['chartTreasury'],
     };
     let chartViewTypes = { avg: 'bar', calc: 'bar', brawl: 'bar' };
@@ -1364,8 +1365,26 @@
 
     function brawlShareLabels() { return BRAWL_SHARE_SWEEP.map(p => p + '%'); }
 
+    function brawlWeekResources(s, c) {
+      const d = c.bd || 3;
+      const p = s.clanPct;
+      return {
+        labels: ['Гильзы', 'Казна ₽', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси-Маячок', 'Гамма'],
+        keys: ['shells', 'treasury', 'influence', 'batteries', 'fern', 'substance', 'psi', 'gamma'],
+        values: [
+          c.weekBrawl,
+          c.weekBrawlTreasury / 1000,
+          brawlClanInfluence(p) * 3 * d,
+          brawlClanBatteries(p) * 3 * d,
+          brawlClanPoolShare(p, 'fern') * 3 * d,
+          brawlClanPoolShare(p, 'substance') * 3 * d,
+          brawlClanPoolShare(p, 'psiBeacon') * 3 * d,
+          brawlClanPoolShare(p, 'gamma') * 3 * d,
+        ],
+      };
+    }
+
     function renderBrawlCharts(s, c) {
-      const pool = brawlPool();
       const brawlType = chartScopeType('brawl');
       const shareLbl = brawlShareLabels();
       const brawlScaleY = { y: { ...chartOpts.scales.y, ticks: scaleTicksK() } };
@@ -1408,17 +1427,42 @@
         options: makeChartOptions({ legend: chartLegend('multi', 'brawl') }),
       });
 
-      setChart('chartBrawlAnPool', {
+      const weekRes = brawlWeekResources(s, c);
+      setChart('chartBrawlAnWeek', {
         type: 'bar',
         skipMorph: true,
         data: {
-          labels: CHART_THEME.poolLabels,
-          datasets: [barDataset('Банк / этап', [
-            pool.shells, pool.treasury / 1000, pool.influence, pool.batteries,
-            pool.fern, pool.substance, pool.psiBeacon, pool.gamma,
-          ], poolColors())],
+          labels: weekRes.labels,
+          datasets: [barDataset(`Пн–Ср · ${s.clanPct}%`, weekRes.values, weekRes.keys.map(k => chartColor(k)))],
         },
-        options: makeChartOptions({ legend: chartLegend(false), scales: brawlScaleY }),
+        options: makeChartOptions({
+          legend: chartLegend(false),
+          scales: brawlScaleY,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label(ctx) {
+                  const lbl = weekRes.labels[ctx.dataIndex];
+                  const v = Number(ctx.raw);
+                  if (lbl.includes('Казна')) return `${lbl}: ${rub(v * 1000)}`;
+                  return `${lbl}: ${v.toLocaleString('ru')}`;
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      setChart('chartBrawlAnPace', {
+        type: brawlType,
+        skipMorph: chartScopeType('brawl') === 'line',
+        data: {
+          labels: ['Этап', 'День ×3', 'Неделя Пн–Ср'],
+          datasets: [makeSeries('Гильзы', [c.bs, c.bp, c.weekBrawl], 'shells', 'brawl', {
+            backgroundColor: [chartColor('shells', 'barSoft'), chartColor('shells', 'bar'), chartColor('accent')],
+          })],
+        },
+        options: makeChartOptions({ legend: chartLegend(false, 'brawl'), barLabels: { force: true } }),
       });
 
       const deltaKeys = [
