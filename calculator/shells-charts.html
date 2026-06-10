@@ -240,7 +240,6 @@
     .card-sub { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.55rem; font-family: var(--mono); }
     .brawl-save-hint { font-size: 0.62rem; color: var(--win); font-family: var(--mono); margin-left: 0.5rem; opacity: 0; transition: opacity 0.25s; }
     .brawl-save-hint.show { opacity: 1; }
-    .brawl-charts-grid .card h2 { font-size: 0.82rem; }
     .section-head {
       font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
       color: var(--accent); margin: 0.2rem 0 0.55rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border);
@@ -330,18 +329,15 @@
           <span class="hero-mode" id="heroMode">Выберите тир</span>
         </div>
         <div class="tier-bar" id="tierBar"></div>
-        <p class="tier-hint" id="tierHint">Межсезонье · тиры не применяются · выберите режим игры ниже</p>
         <div class="scenario-wrap">
           <div class="scenario-head">
             <div>
               <div class="lbl" id="playModeLbl">Что играет клан</div>
-              <p class="scenario-desc" id="playModeDesc">Выберите тир · условия турнира — в сайдбаре</p>
             </div>
             <span class="scenario-tier-pill" id="scenarioTierPill">—</span>
           </div>
           <div class="play-modes" id="playModes"></div>
         </div>
-        <p class="audit-ok" id="auditLine"></p>
       </section>
 
       <section class="calc-main" id="calcMain">
@@ -352,7 +348,6 @@
       <div class="kpis" id="kpis"></div>
 
       <div class="panel active" id="panel-overview">
-        <p class="panel-head">AVG · 100% наград · 3П · 100% доля · Пн–Сб</p>
         <div class="card wide">
           <h2>Полный просчёт по тирам</h2>
           <div class="scroll-y" style="max-height:320px"><table class="tier-table avg-table" id="avgTable"></table></div>
@@ -385,7 +380,6 @@
       </div>
 
       <div class="panel" id="panel-calc">
-        <p class="panel-head" id="calcPanelHead">Расчёт · выберите тир и режим игры</p>
         <div class="chart-toolbar" data-block="common" id="calcChartToolbar">
           <span class="lbl">Тип графиков</span>
           <div class="chart-type-toggle" data-scope="calc">
@@ -411,22 +405,18 @@
       </div>
 
       <div class="panel" id="panel-brawl">
-        <p class="panel-head" id="brawlPanelHead">Тестовый раздел · потасовки · Пн–Ср</p>
-
         <div class="card wide brawl-setup">
-          <h2>1 · Настройка пула наград <span class="brawl-save-hint" id="brawlSaveHint"></span></h2>
+          <h2>Пул наград <span class="brawl-save-hint" id="brawlSaveHint"></span></h2>
           <div class="brawl-setup-row">
             <div class="field brawl-clan-field"><label>Доля клана %</label><input type="number" id="clanPctLab" value="48" min="0" max="100" step="0.1" /></div>
           </div>
           <table class="econ-table" id="brawlEconTable"></table>
         </div>
 
-        <p class="section-head wide">2 · Сравнение экономики</p>
         <div class="card wide">
-          <h2>Было (до патча 01.10) → Сейчас (ваш пул)</h2>
+          <h2>Было → Сейчас</h2>
           <table class="econ-table compare-table" id="brawlCompareTable"></table>
         </div>
-        <p class="section-head wide">3 · Аналитика потасовок</p>
         <div class="chart-toolbar" id="brawlChartToolbar">
           <span class="lbl">Тип графиков</span>
           <div class="chart-type-toggle" data-scope="brawl">
@@ -435,17 +425,16 @@
           </div>
         </div>
         <div class="grid brawl-charts-grid">
-          <div class="card"><h2>1 · Гильзы при доле клана</h2><div class="chart-wrap"><canvas id="chartBrawlAnShells"></canvas></div></div>
-          <div class="card"><h2>2 · Казна и влияние</h2><div class="chart-wrap"><canvas id="chartBrawlAnClan"></canvas></div></div>
-          <div class="card"><h2>3 · Материалы при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnMats"></canvas></div></div>
-          <div class="card"><h2>4 · Банк группы / этап</h2><div class="chart-wrap"><canvas id="chartBrawlAnPool"></canvas></div></div>
-          <div class="card wide"><h2>5 · Было → Сейчас · Δ%</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnDelta"></canvas></div></div>
+          <div class="card"><h2>Гильзы при доле клана</h2><div class="chart-wrap"><canvas id="chartBrawlAnShells"></canvas></div></div>
+          <div class="card"><h2>Казна и влияние</h2><div class="chart-wrap"><canvas id="chartBrawlAnClan"></canvas></div></div>
+          <div class="card"><h2>Материалы при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnMats"></canvas></div></div>
+          <div class="card"><h2>Банк / этап</h2><div class="chart-wrap"><canvas id="chartBrawlAnPool"></canvas></div></div>
+          <div class="card wide"><h2>Было → Сейчас</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnDelta"></canvas></div></div>
           <div class="card wide"><h2>Детализация потасовок</h2><table id="brawlRows"></table></div>
         </div>
       </div>
 
       <div class="panel" id="panel-clan">
-        <p class="panel-head">Казна клана · доходы и регистрации</p>
         <div class="grid">
           <div class="card"><h2>Казна · неделя</h2><div class="chart-wrap"><canvas id="chartTreasury"></canvas></div></div>
           <div class="card"><h2>Движение казны</h2><table id="clanTable"></table></div>
@@ -457,7 +446,7 @@
 
   <script>
     const OFFICIAL = {
-      brawl: { pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 300, substance: 300, psiBeacon: 300, gamma: 120 }, maxShellsPlayer: 1000, minShare: 5, reg: 100_000 },
+      brawl: { pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 }, maxShellsPlayer: 1000, minShare: 5, reg: 100_000 },
       tour: { off: { win: { shells: 2400, treasury: 700_000 }, lose: { shells: 800, treasury: 350_000 } }, reg: 200_000 },
     };
     const BRAWL_OLD = {
@@ -512,7 +501,7 @@
     let activePlayMode = 'both';
     let tierSelected = false;
     let suppressRender = false;
-    const BRAWL_STORAGE_KEY = 'stalcraft-shells-brawl-v1';
+    const BRAWL_STORAGE_KEY = 'stalcraft-shells-brawl-v2';
     const BRAWL_SHARE_SWEEP = [0, 5, 10, 20, 34, 48, 51, 68, 85, 100];
     let brawlSaveTimer = null;
 
@@ -554,7 +543,7 @@
 
     function getBrawlDefaults() {
       return {
-        pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 300, substance: 300, psiBeacon: 300, gamma: 120 },
+        pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 },
         minShare: 5,
         reg: 100_000,
         clanPct: 48,
@@ -762,26 +751,135 @@
     const pieOpts={responsive:true,maintainAspectRatio:false,cutout:'54%',
       plugins:{legend:{position:'right',labels:{color:'#9a9693',font:{size:10}}},pieLabels:true}};
 
+    const CHART_THEME = {
+      palette: {
+        shells: '#5d8a66', treasury: '#c9a227', influence: '#5c7a8a', batteries: '#8a7a5c',
+        fern: '#7a9a5c', substance: '#9a6a8a', psi: '#6a8a9a', gamma: '#b87a4a',
+        brawl: '#5d8a66', win: '#5d8a66', lose: '#a85c5c', accent: '#c9a227', muted: '#6b6560',
+        old: '#5c7a8a', new: '#c9a227',
+      },
+      alpha: { bar: 'bb', barSoft: '77', lineArea: '33', dim: '44', hl: 'ee' },
+      line: { tension: 0.25, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6 },
+      bar: { borderWidth: 0, borderRadius: 3 },
+      poolLabels: ['Гильзы', 'Казна ₽', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси-Маячок', 'Гамма'],
+      poolKeys: ['shells', 'treasury', 'influence', 'batteries', 'fern', 'substance', 'psi', 'gamma'],
+    };
+
+    function chartColor(key, alpha) {
+      const c = CHART_THEME.palette[key] || key;
+      return alpha ? c + (CHART_THEME.alpha[alpha] || alpha) : c;
+    }
+    function poolColors() { return CHART_THEME.poolKeys.map(k => chartColor(k)); }
+    function chartScopeType(scope) { return chartViewTypes[scope] === 'line' ? 'line' : 'bar'; }
+    function chartLegend(show, scope) {
+      if (show === false) return { display: false };
+      const multi = show === true || show === 'multi';
+      const isLine = scope && chartViewTypes[scope] === 'line';
+      if (!multi && !isLine) return { display: false };
+      return {
+        display: true,
+        position: 'bottom',
+        labels: {
+          color: '#8a8683',
+          font: { family: "'IBM Plex Sans'", size: 10 },
+          boxWidth: 10,
+          padding: 10,
+          usePointStyle: true,
+        },
+      };
+    }
+    function scaleTicksK(axis = 'y') {
+      const base = chartOpts.scales[axis].ticks;
+      return { ...base, callback: v => (Math.abs(v) >= 1000 ? (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + 'k' : v) };
+    }
+    function scaleTicksMln() {
+      return { ...chartOpts.scales.y.ticks, callback: v => (v / 1_000_000).toFixed(1) + ' млн' };
+    }
+    function scaleTicksPct() {
+      return { ...chartOpts.scales.x.ticks, callback: v => `${v}%` };
+    }
+    function makeChartOptions(opts = {}) {
+      const { legend, scales, plugins, indexAxis, barLabels } = opts;
+      const out = {
+        ...chartOpts,
+        plugins: {
+          ...chartOpts.plugins,
+          legend: legend ?? chartOpts.plugins.legend,
+          barLabels: barLabels ?? chartOpts.plugins.barLabels,
+          ...(plugins || {}),
+        },
+        scales: scales ? { ...chartOpts.scales, ...scales } : chartOpts.scales,
+      };
+      if (indexAxis) out.indexAxis = indexAxis;
+      return out;
+    }
+    function lineDataset(label, data, colorKey, extra = {}) {
+      const col = chartColor(colorKey);
+      return {
+        label,
+        data,
+        borderColor: col,
+        backgroundColor: chartColor(colorKey, 'lineArea'),
+        pointBackgroundColor: col,
+        pointBorderColor: col,
+        fill: extra.fill ?? false,
+        tension: CHART_THEME.line.tension,
+        pointRadius: CHART_THEME.line.pointRadius,
+        pointHoverRadius: CHART_THEME.line.pointHoverRadius,
+        borderWidth: CHART_THEME.line.borderWidth,
+        ...extra,
+      };
+    }
+    function barDataset(label, data, colorKeyOrArr, extra = {}) {
+      const bg = Array.isArray(colorKeyOrArr)
+        ? colorKeyOrArr
+        : data.map(() => chartColor(colorKeyOrArr, 'bar'));
+      return {
+        label,
+        data,
+        backgroundColor: bg,
+        borderWidth: CHART_THEME.bar.borderWidth,
+        borderRadius: CHART_THEME.bar.borderRadius,
+        ...extra,
+      };
+    }
+    function makeSeries(label, data, colorKey, scope, extra = {}) {
+      if (chartScopeType(scope) === 'line') return lineDataset(label, data, colorKey, extra);
+      return barDataset(label, data, colorKey, extra);
+    }
+    function makeSoftSeries(label, data, colorKey, scope) {
+      if (chartScopeType(scope) === 'line') return lineDataset(label, data, colorKey);
+      const col = chartColor(colorKey);
+      return {
+        label,
+        data,
+        backgroundColor: chartColor(colorKey, 'barSoft'),
+        borderColor: col,
+        borderWidth: 1,
+        borderRadius: CHART_THEME.bar.borderRadius,
+      };
+    }
+
     function pickColor(c,i){return Array.isArray(c)?(c[i]??c[0]):c;}
 
     function morphDataset(ds, viewType, chartType) {
       if (chartType === 'line') {
-        const col = pickColor(ds.backgroundColor, 0) || pickColor(ds.borderColor, 0) || '#c9a227';
+        const col = pickColor(ds.borderColor, 0) || pickColor(ds.backgroundColor, 0) || chartColor('accent');
         const isArea = viewType === 'area';
         return {
           ...ds,
           type: 'line',
           borderColor: col,
-          backgroundColor: isArea ? col + '55' : ((ds.fill ?? false) ? col + '33' : col + '33'),
+          backgroundColor: isArea ? col + '55' : chartColor('accent', 'lineArea'),
           fill: isArea ? true : (ds.fill ?? false),
-          tension: ds.tension ?? 0.25,
-          pointRadius: ds.pointRadius ?? 5,
-          pointHoverRadius: 7,
-          pointBackgroundColor: Array.isArray(ds.backgroundColor) ? ds.backgroundColor : col,
-          borderWidth: ds.borderWidth ?? 2,
+          tension: ds.tension ?? CHART_THEME.line.tension,
+          pointRadius: ds.pointRadius ?? CHART_THEME.line.pointRadius,
+          pointHoverRadius: CHART_THEME.line.pointHoverRadius,
+          pointBackgroundColor: Array.isArray(ds.pointBackgroundColor) ? ds.pointBackgroundColor : col,
+          borderWidth: ds.borderWidth ?? CHART_THEME.line.borderWidth,
         };
       }
-      return { ...ds, type: 'bar', borderWidth: ds.borderWidth ?? 0 };
+      return { ...ds, type: 'bar', borderWidth: ds.borderWidth ?? CHART_THEME.bar.borderWidth, borderRadius: ds.borderRadius ?? CHART_THEME.bar.borderRadius };
     }
 
     function morphChartType(cfg, viewType) {
@@ -851,7 +949,6 @@
       const rank=$('tourRank').value, off=$('tourMode').value==='off';
       const play = PLAY_MODES[activePlayMode];
       $('tierBar').classList.toggle('off',off);
-      $('tierHint').classList.toggle('show',off);
       const playLbl = tierSelected && play ? ` · ${play.name}` : '';
       $('heroMode').textContent = !tierSelected ? 'Выберите тир'
         : off ? `Межсезонье · 2400/800${playLbl}` : `${rank}-тир · ${TIER[rank].rating}${playLbl}`;
@@ -862,7 +959,6 @@
         el.style.setProperty('--tc',tierColor(t));
       });
       renderPlayModes();
-      renderAuditLine();
       const activePanel = document.querySelector('.panel.active')?.id?.replace('panel-','') || 'overview';
       syncSidePanels(activePanel);
     }
@@ -954,18 +1050,6 @@
       pill.textContent = !tierSelected ? '—' : off ? 'Межс' : rank;
       pill.style.color = tc;
       pill.style.borderColor = tc;
-      const s = tierSelected ? readState() : null;
-      $('playModeDesc').textContent = !tierSelected
-        ? 'Сначала выберите тир'
-        : (() => {
-            const parts = [];
-            if (off) parts.push('Межсезонье');
-            else parts.push(`${rank}-тир · ${TIER[rank].rating}`);
-            if (activePlayMode !== 'brawl') parts.push(`турнир: ${tourConditionLabel(s)}`);
-            if (activePlayMode !== 'tour') parts.push(`потасовки: ${s.clanPct}%`);
-            return parts.join(' · ');
-          })();
-
       $('playModes').innerHTML = Object.entries(PLAY_MODES).map(([id, pm]) => {
         const preview = tierSelected ? compute(stateWithPlayMode(id)) : null;
         const disabled = !tierSelected ? ' disabled style="opacity:0.45;pointer-events:none"' : '';
@@ -1005,7 +1089,9 @@
           labels: [...TIERS, 'Межс'],
           datasets: [{
             data: barPick(tierRows),
-            backgroundColor: [...TIERS.map(r => tierColor(r) + 'cc'), '#5c7a8acc'],
+            backgroundColor: [...TIERS.map(r => tierColor(r) + CHART_THEME.alpha.bar), chartColor('influence', 'bar')],
+            borderWidth: CHART_THEME.bar.borderWidth,
+            borderRadius: CHART_THEME.bar.borderRadius,
           }],
         };
       }
@@ -1017,13 +1103,14 @@
             label: r,
             data: linePick(c),
             borderColor: col,
-            backgroundColor: col + '33',
+            backgroundColor: col + CHART_THEME.alpha.lineArea,
             pointBackgroundColor: col,
             pointBorderColor: col,
             fill: false,
-            tension: 0.25,
-            pointRadius: 4,
-            borderWidth: 2,
+            tension: CHART_THEME.line.tension,
+            pointRadius: CHART_THEME.line.pointRadius,
+            pointHoverRadius: CHART_THEME.line.pointHoverRadius,
+            borderWidth: CHART_THEME.line.borderWidth,
           };
         }),
       };
@@ -1038,7 +1125,11 @@
       const tierRows = [...rows, { r: 'Межс', c: offC }];
       const hl = tierSelected && $('tourMode').value === 'rank' ? $('tourRank').value : null;
       const isLine = chartViewTypes.avg === 'line';
-      const avgLegend = isLine ? { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } } : { display: false };
+      const avgOpts = (money = false) => makeChartOptions({
+        legend: chartLegend(isLine, 'avg'),
+        barLabels: money ? { force: !isLine, money: true } : { force: !isLine },
+        scales: money && !isLine ? { y: { ...chartOpts.scales.y, ticks: scaleTicksMln() } } : undefined,
+      });
 
       $('avgTable').innerHTML = `<thead><tr>
         <th>Тир</th>
@@ -1072,11 +1163,7 @@
         </tr>
       </tbody>`;
 
-      const avgType = isLine ? 'line' : 'bar';
-      const avgLbl = { force: !isLine };
-      const avgMoney = { force: !isLine, money: true };
-      const avgPlugins = (money) => ({ ...chartOpts.plugins, legend: avgLegend, barLabels: money ? avgMoney : avgLbl });
-      const treasuryTicks = { ...chartOpts.scales.y.ticks, callback: v => (v / 1_000_000).toFixed(1) + ' млн' };
+      const avgType = chartScopeType('avg');
 
       setChart('chartAvgWeek', {
         type: avgType,
@@ -1085,7 +1172,7 @@
           c => c.total.slice(0, 6),
           tierRows,
         ),
-        options: { ...chartOpts, plugins: avgPlugins(false) },
+        options: avgOpts(false),
         skipMorph: true,
       });
       setChart('chartAvgTourDay', {
@@ -1095,7 +1182,7 @@
           c => c.tourPart.slice(0, 6),
           tierRows,
         ),
-        options: { ...chartOpts, plugins: avgPlugins(false) },
+        options: avgOpts(false),
         skipMorph: true,
       });
       setChart('chartAvgBrawlDay', {
@@ -1105,7 +1192,7 @@
           c => c.brawlPart.slice(0, 6),
           tierRows,
         ),
-        options: { ...chartOpts, plugins: avgPlugins(false) },
+        options: avgOpts(false),
         skipMorph: true,
       });
       setChart('chartAvgTreasury', {
@@ -1115,11 +1202,7 @@
           c => avgDailyTreasury(c),
           tierRows,
         ),
-        options: {
-          ...chartOpts,
-          plugins: avgPlugins(true),
-          scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, ticks: isLine ? chartOpts.scales.y.ticks : treasuryTicks } },
-        },
+        options: avgOpts(true),
         skipMorph: true,
       });
     }
@@ -1137,23 +1220,6 @@
       checks.push(['турнир/день', c.tp, dayTotalFixed(s.tourMode, r, s.tourDay)]);
       checks.push(['казна/день', c.tt, dayTreasuryFixed(s.tourMode, r, s.tourDay)]);
       return checks.every(([, got, want]) => got === want);
-    }
-
-    function renderAuditLine() {
-      const el = $('auditLine');
-      if (!el) return;
-      if (!tierSelected) { el.textContent = ''; return; }
-      const s = readState(), c = compute(s);
-      const ok = runAudit(s, c);
-      const tierLbl = s.tourMode === 'off' ? 'межсезонье' : `${s.tourRank}-тир`;
-      const play = PLAY_MODES[activePlayMode].name;
-      if (ok) {
-        el.textContent = `✓ ${tierLbl} · ${play} · ${tourConditionLabel(s)} · ${c.weekTotal.toLocaleString('ru')} гильз/нед`;
-        el.style.color = 'var(--win)';
-      } else {
-        el.textContent = `⚠ ${tierLbl} · проверьте условия турнира в сайдбаре`;
-        el.style.color = 'var(--lose)';
-      }
     }
 
     function buildBrawlEconTable() {
@@ -1208,23 +1274,12 @@
       if (!panel) return;
       if (!tierSelected) {
         panel.querySelectorAll('[data-block]').forEach(el => { el.style.display = 'none'; });
-        const head = $('calcPanelHead');
-        if (head) head.textContent = 'Расчёт · выберите тир и режим игры';
         return;
       }
       panel.querySelectorAll('[data-block]').forEach(el => {
         const blocks = (el.dataset.block || '').split(',').map(b => b.trim());
         el.style.display = blockVisible(blocks, s) ? '' : 'none';
       });
-      const head = $('calcPanelHead');
-      if (!head) return;
-      if (!tierSelected) {
-        head.textContent = 'Расчёт · выберите тир и режим игры';
-        return;
-      }
-      const pm = PLAY_MODES[activePlayMode];
-      const cond = s ? (activePlayMode !== 'brawl' ? tourConditionLabel(s) : `доля ${s.clanPct}%`) : '';
-      head.textContent = `${pm.name} · ${pm.desc}${cond ? ' · ' + cond : ''}`;
     }
 
     function renderCalc(s,c){
@@ -1308,102 +1363,62 @@
     }
 
     function brawlShareLabels() { return BRAWL_SHARE_SWEEP.map(p => p + '%'); }
-    function highlightShareColor(p, cur, base, active) {
-      return Math.round(p) === Math.round(cur) ? active : base;
-    }
 
     function renderBrawlCharts(s, c) {
       const pool = brawlPool();
-      const isLine = chartViewTypes.brawl === 'line';
+      const brawlType = chartScopeType('brawl');
       const shareLbl = brawlShareLabels();
-      const legendBottom = { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } };
+      const brawlScaleY = { y: { ...chartOpts.scales.y, ticks: scaleTicksK() } };
       renderBrawlEconLive(s);
 
+      const shellsDs = chartScopeType('brawl') === 'line'
+        ? lineDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)), 'shells')
+        : barDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)), BRAWL_SHARE_SWEEP.map(p =>
+          Math.round(p) === Math.round(s.clanPct) ? chartColor('accent') : chartColor('shells', 'barSoft')));
+
       setChart('chartBrawlAnShells', {
-        type: isLine ? 'line' : 'bar',
-        data: {
-          labels: shareLbl,
-          datasets: [{
-            label: 'Гильзы / этап',
-            data: BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)),
-            backgroundColor: BRAWL_SHARE_SWEEP.map(p => highlightShareColor(p, s.clanPct, '#5d8a6677', '#c9a227')),
-            borderColor: '#5d8a66',
-            borderWidth: isLine ? 2 : 0,
-            tension: 0.25,
-            pointRadius: isLine ? 4 : 0,
-          }],
-        },
-        options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: { display: false } } },
+        type: brawlType,
+        data: { labels: shareLbl, datasets: [shellsDs] },
+        options: makeChartOptions({ legend: chartLegend(false, 'brawl') }),
       });
 
       setChart('chartBrawlAnClan', {
-        type: isLine ? 'line' : 'bar',
+        type: brawlType,
         data: {
           labels: shareLbl,
           datasets: [
-            {
-              label: 'Казна, тыс ₽',
-              data: BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p) / 1000),
-              backgroundColor: isLine ? 'transparent' : '#c9a22777',
-              borderColor: '#c9a227',
-              borderWidth: isLine ? 2 : 1,
-              tension: 0.25,
-              pointRadius: isLine ? 3 : 0,
-            },
-            {
-              label: 'Влияние',
-              data: BRAWL_SHARE_SWEEP.map(p => brawlClanInfluence(p)),
-              backgroundColor: isLine ? 'transparent' : '#5c7a8a77',
-              borderColor: '#5c7a8a',
-              borderWidth: isLine ? 2 : 1,
-              tension: 0.25,
-              pointRadius: isLine ? 3 : 0,
-            },
+            makeSoftSeries('Казна, тыс ₽', BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p) / 1000), 'treasury', 'brawl'),
+            makeSoftSeries('Влияние', BRAWL_SHARE_SWEEP.map(p => brawlClanInfluence(p)), 'influence', 'brawl'),
           ],
         },
-        options: {
-          ...chartOpts,
-          plugins: { ...chartOpts.plugins, legend: legendBottom },
-          scales: {
-            ...chartOpts.scales,
-            y: { ...chartOpts.scales.y, ticks: { ...chartOpts.scales.y.ticks, callback: v => v >= 1000 ? (v / 1000) + 'k' : v } },
-          },
-        },
+        options: makeChartOptions({ legend: chartLegend('multi', 'brawl'), scales: brawlScaleY }),
       });
 
       setChart('chartBrawlAnMats', {
-        type: isLine ? 'line' : 'bar',
+        type: brawlType,
         data: {
           labels: shareLbl,
           datasets: [
-            { label: 'Папоротник', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'fern')), borderColor: '#7a9a5c', backgroundColor: isLine ? 'transparent' : '#7a9a5c77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
-            { label: 'Вещество', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'substance')), borderColor: '#9a6a8a', backgroundColor: isLine ? 'transparent' : '#9a6a8a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
-            { label: 'Пси-Маячок', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'psiBeacon')), borderColor: '#6a8a9a', backgroundColor: isLine ? 'transparent' : '#6a8a9a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
-            { label: 'Гамма', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'gamma')), borderColor: '#b87a4a', backgroundColor: isLine ? 'transparent' : '#b87a4a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
+            makeSoftSeries('Папоротник', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'fern')), 'fern', 'brawl'),
+            makeSoftSeries('Вещество', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'substance')), 'substance', 'brawl'),
+            makeSoftSeries('Пси-Маячок', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'psiBeacon')), 'psi', 'brawl'),
+            makeSoftSeries('Гамма', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'gamma')), 'gamma', 'brawl'),
           ],
         },
-        options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: legendBottom } },
+        options: makeChartOptions({ legend: chartLegend('multi', 'brawl') }),
       });
 
       setChart('chartBrawlAnPool', {
         type: 'bar',
         skipMorph: true,
         data: {
-          labels: ['Гильзы', 'Казна ₽', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси-Маячок', 'Гамма'],
-          datasets: [{
-            label: 'Банк / этап',
-            data: [pool.shells, pool.treasury / 1000, pool.influence, pool.batteries, pool.fern, pool.substance, pool.psiBeacon, pool.gamma],
-            backgroundColor: ['#5d8a66', '#c9a227', '#5c7a8a', '#8a7a5c', '#7a9a5c', '#9a6a8a', '#6a8a9a', '#b87a4a'],
-          }],
+          labels: CHART_THEME.poolLabels,
+          datasets: [barDataset('Банк / этап', [
+            pool.shells, pool.treasury / 1000, pool.influence, pool.batteries,
+            pool.fern, pool.substance, pool.psiBeacon, pool.gamma,
+          ], poolColors())],
         },
-        options: {
-          ...chartOpts,
-          plugins: { ...chartOpts.plugins, legend: { display: false } },
-          scales: {
-            ...chartOpts.scales,
-            y: { ...chartOpts.scales.y, ticks: { ...chartOpts.scales.y.ticks, callback: v => v >= 1000 ? (v / 1000) + 'k' : v } },
-          },
-        },
+        options: makeChartOptions({ legend: chartLegend(false), scales: brawlScaleY }),
       });
 
       const deltaKeys = [
@@ -1421,32 +1436,21 @@
         skipMorph: true,
         data: {
           labels: deltaKeys.map(([lbl]) => lbl),
-          datasets: [{
-            label: 'Δ %',
-            data: deltaVals,
-            backgroundColor: deltaVals.map(v => v > 0 ? '#5d8a66bb' : v < 0 ? '#a85c5cbb' : '#6b6560bb'),
-          }],
+          datasets: [barDataset('Δ %', deltaVals, deltaVals.map(v =>
+            v > 0 ? chartColor('win', 'bar') : v < 0 ? chartColor('lose', 'bar') : chartColor('muted', 'bar')))],
         },
-        options: {
-          ...chartOpts,
+        options: makeChartOptions({
           indexAxis: 'y',
-          plugins: {
-            ...chartOpts.plugins,
-            legend: { display: false },
-            tooltip: { callbacks: { label: ctx => `${ctx.parsed.x >= 0 ? '+' : ''}${ctx.parsed.x.toFixed(1)}%` } },
-          },
-          scales: {
-            ...chartOpts.scales,
-            x: { ...chartOpts.scales.x, ticks: { ...chartOpts.scales.x.ticks, callback: v => `${v}%` } },
-          },
-        },
+          legend: chartLegend(false),
+          scales: { x: { ...chartOpts.scales.x, ticks: scaleTicksPct() } },
+          plugins: { tooltip: { callbacks: { label: ctx => `${ctx.parsed.x >= 0 ? '+' : ''}${ctx.parsed.x.toFixed(1)}%` } } },
+        }),
       });
     }
 
     function renderBrawlPanel() {
       const s = brawlPanelState();
       const c = compute(s);
-      $('brawlPanelHead').textContent = `Тестовый раздел · доля ${s.clanPct}% · ${c.bs} г/этап · ${c.bp} г/день · ${c.weekBrawl} г/нед`;
       renderBrawlCompare(s);
       renderBrawlRows(s, c);
       renderBrawlCharts(s, c);
@@ -1467,18 +1471,43 @@
     }
 
     function renderCharts(s,c){
-      const tc=s.tourMode==='off'?'#5c7a8a':tierColor(s.tourRank);
+      const tc=s.tourMode==='off'?chartColor('influence'):tierColor(s.tourRank);
       const stacked = playModeOk('brawl') && playModeOk('tour');
       const weeklyDs = [];
-      if (playModeOk('brawl')) weeklyDs.push({ label:'Потасовки', data:c.brawlPart, backgroundColor:'#5d8a66bb', stack:'s' });
-      if (playModeOk('tour')) weeklyDs.push({ label:'Турнир', data:c.tourPart, backgroundColor:tc+'bb', stack:'s' });
-      setChart('chartWeekly',{type:'bar',data:{labels:DAYS,datasets:weeklyDs.length?weeklyDs:[{label:'Гильзы',data:c.total,backgroundColor:tc+'bb'}]},
-        options:{...chartOpts,plugins:{...chartOpts.plugins,barLabels:{force:true}},
-          scales:{...chartOpts.scales,x:{...chartOpts.scales.x,stacked},y:{...chartOpts.scales.y,stacked}}}});
+      if (playModeOk('brawl')) weeklyDs.push({ ...barDataset('Потасовки', c.brawlPart, 'brawl'), stack: 's' });
+      if (playModeOk('tour')) weeklyDs.push({
+        label: 'Турнир',
+        data: c.tourPart,
+        backgroundColor: c.tourPart.map(() => tc + CHART_THEME.alpha.bar),
+        borderWidth: CHART_THEME.bar.borderWidth,
+        borderRadius: CHART_THEME.bar.borderRadius,
+        stack: 's',
+      });
+      setChart('chartWeekly', {
+        type: 'bar',
+        data: {
+          labels: DAYS,
+          datasets: weeklyDs.length ? weeklyDs : [barDataset('Гильзы', c.total, tc)],
+        },
+        options: makeChartOptions({
+          legend: chartLegend(weeklyDs.length > 1, 'calc'),
+          barLabels: { force: true },
+          scales: {
+            x: { ...chartOpts.scales.x, stacked },
+            y: { ...chartOpts.scales.y, stacked },
+          },
+        }),
+      });
       let cum=0;
       const cumulData = c.total.map(v => (cum += v));
-      setChart('chartCumul',{type:'line',data:{labels:DAYS,datasets:[{label:'Накоплено',data:cumulData,borderColor:tc,backgroundColor:tc+'33',fill:true,tension:0.25,pointRadius:5}]},
-        options:{...chartOpts,plugins:{...chartOpts.plugins,barLabels:{force:true}}}});
+      setChart('chartCumul', {
+        type: 'line',
+        data: {
+          labels: DAYS,
+          datasets: [lineDataset('Накоплено', cumulData, s.tourMode === 'off' ? 'influence' : 'accent', { fill: true, borderColor: tc, backgroundColor: tc + CHART_THEME.alpha.lineArea, pointBackgroundColor: tc, pointBorderColor: tc })],
+        },
+        options: makeChartOptions({ legend: chartLegend(false), barLabels: { force: true } }),
+      });
       if (playModeOk('tour') && s.tourMode === 'rank') {
         const tierVals = TIERS.map(r => weekTotalForTier(s, r));
         const selIdx = TIERS.indexOf(s.tourRank);
@@ -1487,18 +1516,12 @@
           type: 'bar',
           data: {
             labels: TIERS,
-            datasets: [{
-              label: 'Гильзы / неделя',
-              data: tierVals,
-              backgroundColor: TIERS.map((r, i) => tierColor(r) + (i === selIdx ? 'ee' : '44')),
-            }],
+            datasets: [barDataset('Гильзы / неделя', tierVals, TIERS.map((r, i) => tierColor(r) + (i === selIdx ? CHART_THEME.alpha.hl : CHART_THEME.alpha.dim)))],
           },
-          options: {
-            ...chartOpts,
+          options: makeChartOptions({
+            legend: chartLegend(false),
+            barLabels: { force: true },
             plugins: {
-              ...chartOpts.plugins,
-              legend: { display: false },
-              barLabels: { force: true },
               tooltip: {
                 callbacks: {
                   label(ctx) {
@@ -1511,14 +1534,18 @@
                 },
               },
             },
-          },
+          }),
         });
       }
       if ($('panel-clan')?.classList.contains('active')) {
-        setChart('chartTreasury', { type: 'bar', data: { labels: ['Доход', 'Расход', 'Баланс'],
-          datasets: [{ data: [c.weekBrawlTreasury + c.weekTourTreasury, c.regTotal, c.weekTreasuryNet],
-            backgroundColor: ['#5d8a66', '#a85c5c', '#c9a227'] }] },
-          options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: { display: false } } } });
+        setChart('chartTreasury', {
+          type: 'bar',
+          data: {
+            labels: ['Доход', 'Расход', 'Баланс'],
+            datasets: [barDataset('Казна', [c.weekBrawlTreasury + c.weekTourTreasury, c.regTotal, c.weekTreasuryNet], ['win', 'lose', 'treasury'].map(k => chartColor(k)))],
+          },
+          options: makeChartOptions({ legend: chartLegend(false) }),
+        });
       }
     }
 
