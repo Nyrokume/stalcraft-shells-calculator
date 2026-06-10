@@ -1,0 +1,12 @@
+config/google/service-account.json
+config/google/credentials.json
+config/google/token.json
+config/google/.env
+config/google/spreadsheet-id.txt
+config/google/drive-folder.txt
+.cursor/
+.venv/
+mcp-google-sheets/
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>STALCRAFT — гильзы КВ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0a; --surface: #131313; --surface2: #1c1c1c; --surface3: #242424;
+      --border: #2a2a2a; --border-hi: #3a3a3a;
+      --text: #eceae7; --muted: #8a8683; --accent: #c9a227;
+      --win: #5d8a66; --lose: #a85c5c;
+      --mono: "IBM Plex Mono", monospace; --sans: "IBM Plex Sans", system-ui, sans-serif;
+      --r: 8px; --rs: 5px;
+      --scroll: #3d3a36; --scroll-hi: #c9a22788;
+      --side-w: clamp(248px, 22vw, 288px);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; }
+    html { scrollbar-color: var(--scroll) var(--bg); scrollbar-width: thin; }
+    html::-webkit-scrollbar { width: 9px; }
+    html::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 99px; border: 2px solid var(--bg); }
+    html::-webkit-scrollbar-thumb:hover { background: var(--scroll-hi); }
+    .scroll-y { overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--scroll) transparent; }
+    .scroll-y::-webkit-scrollbar { width: 6px; }
+    .scroll-y::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 99px; }
+
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+    .layout { display: grid; grid-template-columns: var(--side-w) 1fr; min-height: 100vh; align-items: start; }
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .side { position: relative; max-height: none; border-right: none; border-bottom: 1px solid var(--border); }
+    }
+
+    .side {
+      background: var(--surface); border-right: 1px solid var(--border);
+      padding: 1.1rem 1rem; max-height: 100vh; position: sticky; top: 0;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    .side-body { flex: 1; min-height: 0; overflow-y: auto; }
+    .side-lab {
+      flex-shrink: 0; margin-top: auto; padding: 0.7rem 0.55rem 0.55rem;
+      border-top: 1px dashed #5d8a6655;
+      background: linear-gradient(180deg, #0f1410 0%, #121a14 100%);
+      border-radius: var(--r);
+      margin-left: -0.35rem; margin-right: -0.35rem; margin-bottom: -0.35rem;
+      box-shadow: inset 0 1px 0 #5d8a6622;
+    }
+    .side-lab-tag {
+      display: flex; align-items: center; gap: 0.35rem;
+      font-size: 0.56rem; font-weight: 600; letter-spacing: 0.14em;
+      text-transform: uppercase; color: #8ab896; margin-bottom: 0.45rem;
+    }
+    .side-lab-tag::before {
+      content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #5d8a6644);
+    }
+    .side-lab-badge {
+      padding: 0.12rem 0.38rem; border-radius: 3px;
+      background: #5d8a6628; border: 1px solid #5d8a6688;
+      color: #a8d4b0; font-family: var(--mono); font-size: 0.58rem;
+    }
+    .side-lab-btn {
+      width: 100%; text-align: left; padding: 0.62rem 0.7rem;
+      border: 1px solid #5d8a6655; border-left: 4px solid #5d8a66;
+      background: #141c16; color: var(--text); font-size: 0.82rem; font-weight: 600;
+      border-radius: var(--rs); cursor: pointer; font-family: var(--sans);
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .side-lab-btn:hover {
+      border-color: #5d8a66; background: #182218;
+      box-shadow: 0 0 0 1px #5d8a6633;
+    }
+    .side-lab-btn.active {
+      border-color: #7ab88a; border-left-color: #8fd4a0;
+      background: #101810; color: #b8e8c4;
+      box-shadow: 0 0 0 1px #5d8a6655, 0 4px 14px #5d8a6622;
+    }
+    .side-lab-btn .lab-title { display: block; line-height: 1.25; }
+    .side-lab-btn small {
+      display: block; font-size: 0.64rem; color: #7a9a82;
+      margin-top: 0.2rem; font-weight: 400; line-height: 1.35;
+    }
+    .side-lab-btn.active small { color: #8ab896; }
+    .side-head { margin-bottom: 0.85rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
+    .side h1 { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+    .side .title { font-size: 1.05rem; font-weight: 600; margin: 0.15rem 0 0.2rem; }
+    .side .meta { font-size: 0.67rem; color: var(--muted); }
+    .side .meta a { color: var(--accent); text-decoration: none; }
+    .side .meta a:hover { text-decoration: underline; }
+
+    .preset-group { margin-bottom: 0.75rem; }
+    .preset-group .lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.32rem; }
+    .presets { display: flex; flex-direction: column; gap: 0.28rem; max-height: 130px; }
+    .preset {
+      text-align: left; padding: 0.42rem 0.55rem; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text); border-radius: var(--rs);
+      font-family: var(--sans); font-size: 0.78rem; cursor: pointer; border-left: 3px solid var(--border);
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .preset:hover { border-color: var(--border-hi); background: var(--surface3); }
+    .preset.active { border-left-color: var(--accent); background: #1a1810; }
+    .preset small { display: block; color: var(--muted); font-size: 0.66rem; margin-top: 0.1rem; }
+
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.28rem; margin-bottom: 0.65rem; }
+    .tab {
+      padding: 0.36rem 0.5rem; border: 1px solid var(--border); background: var(--surface2);
+      color: var(--muted); font-size: 0.72rem; border-radius: var(--rs); cursor: pointer; font-family: var(--sans);
+    }
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-color: var(--accent); background: #1a1810; }
+
+    .tune { margin-top: 0.5rem; }
+    .tune summary { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); cursor: pointer; padding: 0.3rem 0; }
+    .tune-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.5rem; }
+    .field label { font-size: 0.6rem; color: var(--muted); display: block; margin-bottom: 0.12rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    .field select, .field input[type="number"] {
+      width: 100%; padding: 0.36rem 0.45rem; border: 1px solid var(--border);
+      border-radius: var(--rs); background: var(--surface2); color: var(--text); font-size: 0.78rem; font-family: var(--sans);
+    }
+    .field select:focus, .field input:focus { outline: none; border-color: var(--accent); }
+
+    .econ-table tr.e-row td { background: #1a1810; font-weight: 600; }
+    .econ-table tr.sum td { border-top: 1px solid var(--border-hi); }
+    .econ-table .exp { color: var(--win); }
+
+    .days-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; margin-top: 0.5rem; }
+    .day-chk {
+      display: flex; align-items: center; gap: 0.25rem; font-size: 0.68rem; color: var(--muted);
+      padding: 0.26rem 0.35rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; cursor: pointer;
+    }
+    .day-chk:has(input:checked) { border-color: var(--accent); color: var(--text); background: #1a1810; }
+    .day-chk input { accent-color: var(--accent); }
+    .note { font-size: 0.65rem; color: var(--muted); margin-top: 0.45rem; line-height: 1.4; }
+
+    .main { padding: clamp(0.9rem, 2vw, 1.3rem); display: flex; flex-direction: column; gap: 0.8rem; min-width: 0; }
+
+    .hero { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0.85rem 1rem; }
+    .hero-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.6rem; }
+    .hero-top h2 { font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .hero-mode { font-family: var(--mono); font-size: 0.72rem; padding: 0.2rem 0.55rem; border: 1px solid var(--border); border-radius: 99px; }
+
+    .tier-bar { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+    @media (max-width: 640px) { .tier-bar { grid-template-columns: repeat(3, 1fr); } }
+    .tier-cell {
+      all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-width: 0; text-align: center; padding: 0.5rem 0.2rem; font-size: 0.6rem; color: var(--muted);
+      background: var(--surface2); border: 1px solid var(--border); border-radius: var(--rs); cursor: pointer;
+      transition: all 0.12s; user-select: none;
+    }
+    .tier-cell:hover:not(:disabled) { border-color: var(--border-hi); color: var(--text); }
+    .tier-cell .r { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; color: var(--text); pointer-events: none; }
+    .tier-cell .sub { font-size: 0.57rem; pointer-events: none; }
+    .tier-cell .pay { font-family: var(--mono); font-size: 0.54rem; margin-top: 0.1rem; pointer-events: none; }
+    .tier-cell .pay .w { color: var(--win); }
+    .tier-cell .pay .l { color: var(--lose); }
+    .tier-cell.active { border-color: var(--tc, var(--accent)); background: color-mix(in srgb, var(--tc, var(--accent)) 14%, var(--surface2)); }
+    .tier-cell.active .r { color: var(--tc, var(--accent)); }
+    .tier-cell.has-scenario:not(.active) { border-style: dashed; }
+    .tier-bar.off .tier-cell { opacity: 0.4; pointer-events: none; }
+    .tier-hint { font-size: 0.67rem; color: var(--lose); margin-top: 0.4rem; display: none; }
+    .tier-hint.show { display: block; }
+    .scenario-wrap {
+      margin-top: 0.55rem; padding: 0.65rem 0.7rem; border: 1px solid var(--border);
+      border-radius: var(--r); background: var(--surface2);
+    }
+    .scenario-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.55rem; }
+    .scenario-wrap .lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .scenario-desc { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; font-family: var(--mono); }
+    .scenario-tier-pill {
+      font-family: var(--mono); font-size: 0.85rem; font-weight: 700; padding: 0.25rem 0.55rem;
+      border-radius: 99px; border: 1px solid var(--border); flex-shrink: 0;
+    }
+    .scenario-cards {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 188px), 1fr)); gap: 0.45rem;
+    }
+    .scenario-card {
+      text-align: left; padding: 0.55rem 0.6rem; border: 1px solid var(--border); background: var(--surface);
+      border-radius: var(--rs); cursor: pointer; font-family: var(--sans); color: var(--text);
+      border-top: 3px solid var(--tc, var(--border)); transition: border-color 0.12s, background 0.12s, transform 0.1s;
+    }
+    .scenario-card:hover { border-color: var(--border-hi); background: var(--surface3); transform: translateY(-1px); }
+    .scenario-card.active { background: #1a1810; border-color: var(--tc, var(--accent)); box-shadow: 0 0 0 1px var(--tc, var(--accent)); }
+    .scenario-card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem; }
+    .scenario-badge {
+      font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; padding: 0.12rem 0.35rem;
+      border-radius: 3px; background: var(--surface3); color: var(--muted);
+    }
+    .scenario-card.active .scenario-badge { background: color-mix(in srgb, var(--tc, var(--accent)) 22%, var(--surface3)); color: var(--text); }
+    .scenario-card h3 { font-size: 0.82rem; font-weight: 600; margin-bottom: 0.15rem; }
+    .scenario-lead { font-size: 0.64rem; color: var(--muted); margin-bottom: 0.45rem; line-height: 1.35; }
+    .scenario-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
+    .scenario-metrics div { background: var(--surface2); border-radius: 4px; padding: 0.28rem 0.3rem; text-align: center; }
+    .scenario-card.active .scenario-metrics div { background: #14120e; }
+    .scenario-metrics dt { font-size: 0.52rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
+    .scenario-metrics dd { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; margin-top: 0.08rem; }
+    .audit-ok { font-size: 0.62rem; color: var(--win); margin-top: 0.35rem; font-family: var(--mono); }
+    .side-block { display: none; }
+    .side-block.show { display: block; }
+    .side-block + .side-block.show { margin-top: 0.55rem; padding-top: 0.55rem; border-top: 1px solid var(--border); }
+    .panel-head { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.55rem; }
+
+    .calc-main { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0.85rem 1rem; }
+    .calc-main h2 { font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.55rem; }
+    .calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 0.5rem; }
+    .calc-item { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--rs); padding: 0.5rem 0.6rem; }
+    .calc-item .lbl { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+    .calc-item .val { font-family: var(--mono); font-size: 1rem; font-weight: 600; margin-top: 0.1rem; }
+    .calc-item .sub { font-size: 0.63rem; color: var(--muted); margin-top: 0.06rem; }
+    .calc-item.total { border-color: var(--accent); background: #1a1810; grid-column: 1 / -1; }
+    .calc-item.total .val { color: var(--accent); font-size: 1.3rem; }
+    .calc-item.exp .val { color: var(--win); }
+
+    .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 130px), 1fr)); gap: 0.5rem; }
+    .kpi { background: var(--surface); border: 1px solid var(--border); padding: 0.6rem 0.75rem; border-radius: var(--rs); }
+    .kpi .k { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+    .kpi .v { font-family: var(--mono); font-size: 1.05rem; font-weight: 600; margin-top: 0.08rem; }
+    .kpi .u { font-size: 0.62rem; color: var(--muted); }
+    .kpi.hl { border-color: var(--accent); }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 0.65rem; }
+    .wide { grid-column: 1 / -1; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 0.85rem 1rem; display: flex; flex-direction: column; min-width: 0; }
+    .card h2 { font-size: 0.63rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.25rem; flex-wrap: wrap; }
+    .card-head h2 { margin-bottom: 0; }
+    .chart-toolbar { display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.55rem; flex-wrap: wrap; }
+    .chart-toolbar .lbl { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+    .chart-type-toggle { display: inline-flex; gap: 2px; border: 1px solid var(--border); border-radius: var(--rs); overflow: hidden; }
+    .chart-type-toggle button {
+      all: unset; box-sizing: border-box; cursor: pointer; padding: 0.2rem 0.45rem; font-size: 0.62rem;
+      font-family: var(--mono); color: var(--muted); background: var(--surface2); user-select: none;
+    }
+    .chart-type-toggle button:hover { color: var(--text); background: var(--surface3); }
+    .chart-type-toggle button.active { color: var(--accent); background: #1a1810; }
+    .card-sub { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.55rem; font-family: var(--mono); }
+    .brawl-save-hint { font-size: 0.62rem; color: var(--win); font-family: var(--mono); margin-left: 0.5rem; opacity: 0; transition: opacity 0.25s; }
+    .brawl-save-hint.show { opacity: 1; }
+    .brawl-charts-grid .card h2 { font-size: 0.82rem; }
+    .section-head {
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); margin: 0.2rem 0 0.55rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border);
+    }
+    .section-head:first-child { margin-top: 0; }
+    .econ-table input[type="number"] {
+      width: 100%; padding: 0.28rem 0.35rem; border: 1px solid var(--border);
+      border-radius: 4px; background: var(--surface2); color: var(--text); font-family: var(--mono); font-size: 0.75rem; text-align: right;
+    }
+    .econ-table input:focus { outline: none; border-color: var(--accent); }
+    .econ-table tr.live td { background: #1a1810; }
+    .chart-wrap { position: relative; flex: 1; min-height: 230px; }
+    .chart-wrap.tall { min-height: 300px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+    th, td { padding: 0.32rem 0.4rem; border-bottom: 1px solid var(--border); }
+    th { color: var(--muted); font-weight: 500; font-size: 0.6rem; text-transform: uppercase; }
+    td.num { font-family: var(--mono); text-align: right; }
+    .tier-table td:first-child { font-family: var(--mono); font-weight: 600; }
+    .tier-table tr.hl td { background: #1a1810; }
+    .in { color: var(--win); } .out { color: var(--lose); }
+    .avg-table td, .avg-table th { font-size: 0.72rem; }
+    .avg-table th { text-transform: none; letter-spacing: 0; font-size: 0.68rem; white-space: normal; line-height: 1.3; vertical-align: bottom; }
+    .avg-table tr.hl td { background: #1a1810; }
+    .play-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+    @media (max-width: 560px) { .play-modes { grid-template-columns: 1fr; } }
+    .calc-placeholder { color: var(--muted); font-size: 0.8rem; padding: 1rem; text-align: center; border: 1px dashed var(--border); border-radius: var(--rs); }
+    .brawl-setup { border-color: #3d5c44; background: linear-gradient(180deg, #141a15 0%, var(--surface) 100%); }
+    .brawl-setup h2 { color: #8ab896; }
+    .brawl-setup-row { display: flex; gap: 0.75rem; max-width: 11rem; margin-bottom: 0.65rem; }
+    .compare-table .delta-up { color: var(--win); }
+    .compare-table .delta-down { color: var(--lose); }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="side">
+      <div class="side-body scroll-y">
+        <div class="side-head">
+          <h1>Stalcraft X</h1>
+          <div class="title">Гильзы · КВ</div>
+          <div class="meta"><a href="https://vk.com/@stalcraft_official-patchnout-01102025-hah245561" target="_blank" rel="noopener">Патч 01.10.2025</a></div>
+        </div>
+
+        <div class="tabs" id="tabs">
+          <button type="button" class="tab active" data-panel="overview">AVG</button>
+          <button type="button" class="tab" data-panel="calc">Расчёт</button>
+          <button type="button" class="tab" data-panel="clan">Казна</button>
+        </div>
+
+        <details class="tune" id="sideTune" open>
+          <summary>Параметры</summary>
+
+          <div class="side-block" id="sideTour" data-panels="calc,clan">
+            <div class="lbl" style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.35rem">Турнир</div>
+            <div class="tune-grid">
+              <div class="field"><label>Режим</label><select id="tourMode"><option value="rank">Рейтинговый</option><option value="off">Межсезонье</option></select></div>
+              <input type="hidden" id="tourRank" value="C" />
+              <div class="field" id="tourDayField"><label>Счёт / день</label>
+                <select id="tourDay"><option value="3w">3 Win</option><option value="2w1l" selected>2 Win · 1 Lose</option><option value="1w2l">1 Win · 2 Lose</option><option value="3l">3 Lose</option></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-block" id="sideBrawl" data-panels="calc,clan">
+            <div class="lbl" style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.35rem">Потасовки</div>
+            <div class="field"><label>Доля клана %</label><input type="number" id="clanPct" value="48" min="0" max="100" step="0.1" /></div>
+            <input type="hidden" id="playerPct" value="100" />
+            <p class="note" style="margin-top:0.4rem">Банк 1500 гильз + 1,5 млн ₽/группа за этап.</p>
+          </div>
+        </details>
+      </div>
+
+      <div class="side-lab">
+        <div class="side-lab-tag">Тестовый раздел <span class="side-lab-badge">LAB</span></div>
+        <button type="button" class="side-lab-btn" data-panel="brawl" id="tabBrawl">
+          <span class="lab-title">Потасовки · тест банка</span>
+          <small>Песочница · правка пула · Пн–Ср</small>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="hero" id="heroSection">
+        <div class="hero-top">
+          <h2>Тир подразделения</h2>
+          <span class="hero-mode" id="heroMode">Выберите тир</span>
+        </div>
+        <div class="tier-bar" id="tierBar"></div>
+        <p class="tier-hint" id="tierHint">Межсезонье · тиры не применяются · выберите режим игры ниже</p>
+        <div class="scenario-wrap">
+          <div class="scenario-head">
+            <div>
+              <div class="lbl" id="playModeLbl">Что играет клан</div>
+              <p class="scenario-desc" id="playModeDesc">Выберите тир · условия турнира — в сайдбаре</p>
+            </div>
+            <span class="scenario-tier-pill" id="scenarioTierPill">—</span>
+          </div>
+          <div class="play-modes" id="playModes"></div>
+        </div>
+        <p class="audit-ok" id="auditLine"></p>
+      </section>
+
+      <section class="calc-main" id="calcMain">
+        <h2 id="calcTitle">Калькулятор · неделя</h2>
+        <div class="calc-grid" id="calcGrid"></div>
+      </section>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="panel active" id="panel-overview">
+        <p class="panel-head">AVG · 100% наград · 3П · 100% доля · Пн–Сб</p>
+        <div class="card wide">
+          <h2>Полный просчёт по тирам</h2>
+          <div class="scroll-y" style="max-height:320px"><table class="tier-table avg-table" id="avgTable"></table></div>
+        </div>
+        <div class="chart-toolbar" id="avgChartToolbar">
+          <span class="lbl">Тип графиков</span>
+          <div class="chart-type-toggle" data-scope="avg">
+            <button type="button" class="active" data-type="bar">Столбцы</button>
+            <button type="button" data-type="line">Линия</button>
+          </div>
+        </div>
+        <div class="grid" style="margin-top:0.65rem">
+          <div class="card wide">
+            <div class="card-head"><h2>Итого гильз / неделя</h2></div>
+            <div class="chart-wrap tall"><canvas id="chartAvgWeek"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Турнир · гильзы / неделя</h2></div>
+            <div class="chart-wrap"><canvas id="chartAvgTourDay"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Потасовки · гильзы / неделя</h2></div>
+            <div class="chart-wrap"><canvas id="chartAvgBrawlDay"></canvas></div>
+          </div>
+          <div class="card wide">
+            <div class="card-head"><h2>Казна / неделя · MAX</h2></div>
+            <div class="chart-wrap"><canvas id="chartAvgTreasury"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-calc">
+        <p class="panel-head" id="calcPanelHead">Расчёт · выберите тир и режим игры</p>
+        <div class="chart-toolbar" data-block="common" id="calcChartToolbar">
+          <span class="lbl">Тип графиков</span>
+          <div class="chart-type-toggle" data-scope="calc">
+            <button type="button" class="active" data-type="bar">Столбцы</button>
+            <button type="button" data-type="line">Линия</button>
+            <button type="button" data-type="area">Область</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="card wide" data-block="tierCompare" id="cardTierCompare">
+            <h2>Итого за неделю · сравнение тиров</h2>
+            <div class="chart-wrap tall"><canvas id="chartTierCompare"></canvas></div>
+          </div>
+          <div class="card wide" data-block="common">
+            <h2>Гильзы по дням</h2>
+            <div class="chart-wrap tall"><canvas id="chartWeekly"></canvas></div>
+          </div>
+          <div class="card wide" data-block="common">
+            <h2>Накопление</h2>
+            <div class="chart-wrap tall"><canvas id="chartCumul"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-brawl">
+        <p class="panel-head" id="brawlPanelHead">Тестовый раздел · потасовки · Пн–Ср</p>
+
+        <div class="card wide brawl-setup">
+          <h2>1 · Настройка пула наград <span class="brawl-save-hint" id="brawlSaveHint"></span></h2>
+          <div class="brawl-setup-row">
+            <div class="field brawl-clan-field"><label>Доля клана %</label><input type="number" id="clanPctLab" value="48" min="0" max="100" step="0.1" /></div>
+          </div>
+          <table class="econ-table" id="brawlEconTable"></table>
+        </div>
+
+        <p class="section-head wide">2 · Сравнение экономики</p>
+        <div class="card wide">
+          <h2>Было (до патча 01.10) → Сейчас (ваш пул)</h2>
+          <table class="econ-table compare-table" id="brawlCompareTable"></table>
+        </div>
+        <p class="section-head wide">3 · Аналитика потасовок</p>
+        <div class="chart-toolbar" id="brawlChartToolbar">
+          <span class="lbl">Тип графиков</span>
+          <div class="chart-type-toggle" data-scope="brawl">
+            <button type="button" class="active" data-type="bar">Столбцы</button>
+            <button type="button" data-type="line">Линия</button>
+          </div>
+        </div>
+        <div class="grid brawl-charts-grid">
+          <div class="card"><h2>1 · Гильзы при доле клана</h2><div class="chart-wrap"><canvas id="chartBrawlAnShells"></canvas></div></div>
+          <div class="card"><h2>2 · Казна и влияние</h2><div class="chart-wrap"><canvas id="chartBrawlAnClan"></canvas></div></div>
+          <div class="card"><h2>3 · Материалы при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnMats"></canvas></div></div>
+          <div class="card"><h2>4 · Банк группы / этап</h2><div class="chart-wrap"><canvas id="chartBrawlAnPool"></canvas></div></div>
+          <div class="card wide"><h2>5 · Было → Сейчас · Δ%</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnDelta"></canvas></div></div>
+          <div class="card wide"><h2>Детализация потасовок</h2><table id="brawlRows"></table></div>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-clan">
+        <p class="panel-head">Казна клана · доходы и регистрации</p>
+        <div class="grid">
+          <div class="card"><h2>Казна · неделя</h2><div class="chart-wrap"><canvas id="chartTreasury"></canvas></div></div>
+          <div class="card"><h2>Движение казны</h2><table id="clanTable"></table></div>
+          <div class="card"><h2>Регистрации</h2><table id="regTable"></table></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const OFFICIAL = {
+      brawl: { pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 300, substance: 300, psiBeacon: 300, gamma: 120 }, maxShellsPlayer: 1000, minShare: 5, reg: 100_000 },
+      tour: { off: { win: { shells: 2400, treasury: 700_000 }, lose: { shells: 800, treasury: 350_000 } }, reg: 200_000 },
+    };
+    const BRAWL_OLD = {
+      pool: { shells: 1500, treasury: 500_000, influence: 10_000, batteries: 100, fern: 0, substance: 0, psiBeacon: 0, gamma: 0 },
+      maxShellsPlayer: 1000, minShare: 5, reg: 100_000,
+    };
+    const BRAWL_ECON_KEYS = [
+      { key: 'shells', label: 'Банк гильз', unit: 'шт', step: 50 },
+      { key: 'treasury', label: 'Казна', unit: '₽', step: 50000 },
+      { key: 'influence', label: 'Влияние', unit: 'ед', step: 500 },
+      { key: 'batteries', label: 'Батареи', unit: 'ед', step: 5 },
+      { key: 'fern', label: 'Рыжий Папоротник', unit: 'ед', step: 5 },
+      { key: 'substance', label: 'Вещество', unit: 'ед', step: 5 },
+      { key: 'psiBeacon', label: 'Остатки Пси-Маячка', unit: 'ед', step: 1 },
+      { key: 'gamma', label: 'Гамма', unit: 'ед', step: 1 },
+      { key: 'minShare', label: 'Мин. вклад клана', unit: '%', step: 1, pool: false },
+      { key: 'reg', label: 'Регистрация', unit: '₽', step: 10000, pool: false },
+    ];
+    const DAYS = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    const TIERS = ['E','D','C','B','A','S'];
+    const TIER = {
+      E: { color:'#9a9a9a', rating:'0–1249' },
+      D: { color:'#5cb87a', rating:'1250–1499' },
+      C: { color:'#5b9bd5', rating:'1500–1749' },
+      B: { color:'#e07ab0', rating:'1750–1999' },
+      A: { color:'#e05555', rating:'≥2000' },
+      S: { color:'#e8c830', rating:'Топ-8' },
+    };
+    const WIN  = { E:1250, D:1750, C:2400, B:3300, A:4700, S:7000 };
+    const LOSE = { E:250,  D:500,  C:800,  B:1200, A:1800, S:3000 };
+    const TREASURY_WIN  = { E:600_000, D:650_000, C:700_000, B:750_000, A:800_000, S:850_000 };
+    const TREASURY_LOSE = { E:300_000, D:325_000, C:350_000, B:375_000, A:400_000, S:425_000 };
+    const RECORDS = { '3w':[1,1,1], '2w1l':[1,1,0], '1w2l':[1,0,0], '3l':[0,0,0] };
+    const RECORD_LABELS = { '3w':'3 Win', '2w1l':'2 Win 1 Lose', '1w2l':'1 Win 2 Lose', '3l':'3 Lose' };
+    const RECORD_KEYS = ['3w','2w1l','1w2l','3l'];
+
+    const PLAY_MODES = {
+      tour:  { name:'Только турниры', desc:'Чт · Пт · Сб', days:[0,0,0,1,1,1] },
+      both:  { name:'Турниры + потасовки', desc:'Пн – Сб', days:[1,1,1,1,1,1] },
+      brawl: { name:'Только потасовки', desc:'Пн · Вт · Ср', days:[1,1,1,0,0,0] },
+    };
+
+    const charts = {};
+    const chartSpecs = {};
+    const chartScopes = {
+      avg: ['chartAvgWeek', 'chartAvgTourDay', 'chartAvgBrawlDay', 'chartAvgTreasury'],
+      calc: ['chartTierCompare', 'chartWeekly', 'chartCumul'],
+      brawl: ['chartBrawlAnShells', 'chartBrawlAnClan', 'chartBrawlAnMats', 'chartBrawlAnPool', 'chartBrawlAnDelta'],
+      clan: ['chartTreasury'],
+    };
+    let chartViewTypes = { avg: 'bar', calc: 'bar', brawl: 'bar' };
+    let activePlayMode = 'both';
+    let tierSelected = false;
+    let suppressRender = false;
+    const BRAWL_STORAGE_KEY = 'stalcraft-shells-brawl-v1';
+    const BRAWL_SHARE_SWEEP = [0, 5, 10, 20, 34, 48, 51, 68, 85, 100];
+    let brawlSaveTimer = null;
+
+    function $(id) { return document.getElementById(id); }
+    function tierColor(r) { return TIER[r]?.color || '#888'; }
+    function fmt(n) { return n >= 1000 ? (n/1000).toFixed(n%1000===0?0:1)+'k' : String(n); }
+    function rub(n) { return n.toLocaleString('ru') + ' ₽'; }
+
+    function chartLabelText(v, lblOpts) {
+      if (v == null || (typeof v === 'number' && !Number.isFinite(v))) return '';
+      const n = Number(v);
+      if (!n) return '0';
+      if (lblOpts?.money) {
+        if (Math.abs(n) >= 1_000_000) return (n / 1_000_000).toFixed(2).replace('.', ',') + ' млн';
+        if (Math.abs(n) >= 1000) return Math.round(n / 1000).toLocaleString('ru') + ' тыс';
+        return n.toLocaleString('ru');
+      }
+      if (lblOpts?.compact && Math.abs(n) >= 10000) return (n / 1000).toFixed(0).replace('.', ',') + 'k';
+      return n.toLocaleString('ru');
+    }
+
+    function drawValueLabel(ctx, text, x, y, align) {
+      ctx.font = '600 11px IBM Plex Mono';
+      ctx.textAlign = align || 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = 'rgba(0,0,0,0.75)';
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = '#f5f3f0';
+      ctx.fillText(text, x, y);
+    }
+
+    function stageShells(mode,rank,win) { return mode==='off' ? (win?OFFICIAL.tour.off.win.shells:OFFICIAL.tour.off.lose.shells) : (win?WIN[rank]:LOSE[rank]); }
+    function stageTreasury(mode,rank,win) { return mode==='off' ? (win?OFFICIAL.tour.off.win.treasury:OFFICIAL.tour.off.lose.treasury) : (win?TREASURY_WIN[rank]:TREASURY_LOSE[rank]); }
+    function dayTotalFixed(mode,rank,rec) { return RECORDS[rec].reduce((s,w)=>s+stageShells(mode,rank,!!w),0); }
+    function dayTreasuryFixed(mode,rank,rec) { return RECORDS[rec].reduce((s,w)=>s+stageTreasury(mode,rank,!!w),0); }
+
+    function brawlPool() { return OFFICIAL.brawl.pool; }
+
+    function getBrawlDefaults() {
+      return {
+        pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 300, substance: 300, psiBeacon: 300, gamma: 120 },
+        minShare: 5,
+        reg: 100_000,
+        clanPct: 48,
+      };
+    }
+
+    function loadBrawlSettings() {
+      try {
+        const raw = localStorage.getItem(BRAWL_STORAGE_KEY);
+        if (!raw) return;
+        const data = JSON.parse(raw);
+        const defs = getBrawlDefaults();
+        Object.assign(OFFICIAL.brawl.pool, defs.pool, data.pool || {});
+        if (data.minShare != null) OFFICIAL.brawl.minShare = data.minShare;
+        if (data.reg != null) OFFICIAL.brawl.reg = data.reg;
+        if (data.clanPct != null) {
+          if ($('clanPctLab')) $('clanPctLab').value = data.clanPct;
+          if ($('clanPct')) $('clanPct').value = data.clanPct;
+        }
+      } catch (_) { /* ignore corrupt storage */ }
+    }
+
+    function flashBrawlSaved() {
+      const el = $('brawlSaveHint');
+      if (!el) return;
+      el.textContent = 'сохранено';
+      el.classList.add('show');
+      clearTimeout(flashBrawlSaved._t);
+      flashBrawlSaved._t = setTimeout(() => el.classList.remove('show'), 1600);
+    }
+
+    function saveBrawlSettings() {
+      try {
+        localStorage.setItem(BRAWL_STORAGE_KEY, JSON.stringify({
+          pool: { ...OFFICIAL.brawl.pool },
+          minShare: OFFICIAL.brawl.minShare,
+          reg: OFFICIAL.brawl.reg,
+          clanPct: readClanPct(),
+        }));
+        flashBrawlSaved();
+      } catch (_) { /* quota / private mode */ }
+    }
+
+    function saveBrawlSettingsDebounced() {
+      clearTimeout(brawlSaveTimer);
+      brawlSaveTimer = setTimeout(saveBrawlSettings, 350);
+    }
+
+    function readBrawlInputsToState() {
+      BRAWL_ECON_KEYS.forEach(({ key, pool }) => {
+        const id = pool === false ? `econ_${key}` : `econ_pool_${key}`;
+        const el = $(id);
+        if (!el) return;
+        const v = +el.value;
+        if (pool === false) OFFICIAL.brawl[key] = v;
+        else OFFICIAL.brawl.pool[key] = v;
+      });
+    }
+    function readClanPct() {
+      const onBrawl = document.querySelector('.panel.active')?.id === 'panel-brawl';
+      if (onBrawl && $('clanPctLab')) return +$('clanPctLab').value;
+      return +($('clanPct')?.value ?? 48);
+    }
+    function syncClanPctInputs(name) {
+      const side = $('clanPct'), lab = $('clanPctLab');
+      if (!side || !lab) return;
+      if (name === 'brawl') lab.value = side.value;
+      else side.value = lab.value;
+    }
+    function brawlStage(clanPct, playerPct, cfg) {
+      const b = cfg || OFFICIAL.brawl, p = playerPct ?? 100;
+      if (clanPct < b.minShare) return 0;
+      return Math.min(b.maxShellsPlayer, Math.round(b.pool.shells * clanPct / 100 * p / 100));
+    }
+    function brawlClanTreasury(clanPct, cfg) { const b = cfg || OFFICIAL.brawl; return clanPct < b.minShare ? 0 : Math.round(b.pool.treasury * clanPct / 100); }
+    function brawlClanPoolShare(clanPct, key, cfg) {
+      const b = cfg || OFFICIAL.brawl;
+      return clanPct < b.minShare ? 0 : Math.round((b.pool[key] || 0) * clanPct / 100);
+    }
+    function brawlClanInfluence(clanPct, cfg) { return brawlClanPoolShare(clanPct, 'influence', cfg); }
+    function brawlClanBatteries(clanPct, cfg) { return brawlClanPoolShare(clanPct, 'batteries', cfg); }
+    function brawlDay(c, p, cfg) { return brawlStage(c, p, cfg) * 3; }
+    function brawlMetrics(cfg, clanPct, playerPct, days) {
+      const b = cfg, p = playerPct ?? 100, d = days ?? 3;
+      if (clanPct < b.minShare) {
+        return { bs: 0, bt: 0, bi: 0, bb: 0, bp: 0, dayTreasury: 0, weekShells: 0, weekTreasury: 0, weekReg: 0, weekNet: 0 };
+      }
+      const bs = Math.min(b.maxShellsPlayer, Math.round(b.pool.shells * clanPct / 100 * p / 100));
+      const bt = Math.round(b.pool.treasury * clanPct / 100);
+      const bi = Math.round(b.pool.influence * clanPct / 100);
+      const bb = Math.round(b.pool.batteries * clanPct / 100);
+      const bp = bs * 3;
+      const weekTreasury = bt * 3 * d;
+      const weekReg = b.reg * d;
+      return { bs, bt, bi, bb, bp, dayTreasury: bt * 3, weekShells: bp * d, weekTreasury, weekReg, weekNet: weekTreasury - weekReg };
+    }
+    function pctDelta(oldVal, newVal) {
+      if (oldVal === newVal) return '—';
+      if (!oldVal) return newVal ? '+∞' : '—';
+      const d = ((newVal - oldVal) / oldVal) * 100;
+      return (d >= 0 ? '+' : '') + d.toFixed(1) + '%';
+    }
+
+    function buildAvgState(rank, tourMode) {
+      return {
+        days: [1, 1, 1, 1, 1, 1],
+        tourMode: tourMode || 'rank',
+        tourRank: rank,
+        tourDay: '3w',
+        clanPct: 100,
+        playerPct: 100,
+      };
+    }
+
+    function readState() {
+      const mode = PLAY_MODES[activePlayMode] || PLAY_MODES.both;
+      return {
+        days: mode.days.slice(),
+        tourMode: $('tourMode').value,
+        tourRank: $('tourRank').value,
+        tourDay: $('tourDay').value,
+        clanPct: readClanPct(),
+        playerPct: 100,
+      };
+    }
+
+    function stateWithPlayMode(playModeId) {
+      const s = readState();
+      s.days = PLAY_MODES[playModeId].days.slice();
+      return s;
+    }
+    function tourDayShells(s) { return dayTotalFixed(s.tourMode, s.tourRank, s.tourDay); }
+    function tourDayTreasury(s) { return dayTreasuryFixed(s.tourMode, s.tourRank, s.tourDay); }
+    function weekTotalForTier(s, rank) {
+      return compute({ ...s, tourRank: rank }).weekTotal;
+    }
+
+    function compute(s) {
+      const bs=brawlStage(s.clanPct,s.playerPct), bp=bs*3, bt=brawlClanTreasury(s.clanPct);
+      const tp=tourDayShells(s), tt=tourDayTreasury(s);
+      const brawlPart=[],tourPart=[],total=[];
+      let weekBrawl=0,weekTour=0,weekBrawlTreasury=0,weekTourTreasury=0,regBrawl=0,regTour=0,bd=0,td=0;
+      for (let i=0;i<7;i++) {
+        const b=i<3&&s.days[i]?bp:0, t=i>=3&&i<6&&s.days[i]?tp:0;
+        brawlPart.push(b); tourPart.push(t); total.push(b+t);
+        weekBrawl+=b; weekTour+=t;
+        if (i<3&&s.days[i]) { regBrawl+=OFFICIAL.brawl.reg; bd++; weekBrawlTreasury+=bt*3; }
+        if (i>=3&&s.days[i]) { regTour+=OFFICIAL.tour.reg; td++; weekTourTreasury+=tt; }
+      }
+      return { bs,bp,bt,tp,tt,brawlPart,tourPart,total,weekBrawl,weekTour,weekTotal:weekBrawl+weekTour,
+        weekBrawlTreasury,weekTourTreasury,weekTreasuryNet:weekBrawlTreasury+weekTourTreasury-regBrawl-regTour,
+        regBrawl,regTour,regTotal:regBrawl+regTour,bd,td,
+        w:stageShells(s.tourMode,s.tourRank,true), l:stageShells(s.tourMode,s.tourRank,false) };
+    }
+
+    const barLabels={id:'barLabels',afterDatasetsDraw(ch){
+      if(!['bar','line'].includes(ch.config.type)) return;
+      const lblCfg=ch.config.options?.plugins?.barLabels;
+      if(lblCfg===false)return;
+      const lblOpts=typeof lblCfg==='object'?lblCfg:{};
+      const {ctx,data}=ch; ctx.save();
+      const horizontal=ch.config.options?.indexAxis==='y';
+      const stacked=ch.config.options?.scales?.x?.stacked||ch.config.options?.scales?.y?.stacked;
+      data.datasets.forEach((ds,di)=>{
+        if(ds.data.length>14 && !lblOpts.force)return;
+        ch.getDatasetMeta(di).data.forEach((el,i)=>{
+          const raw=ds.data[i];
+          const v=typeof raw==='object'&&raw?raw.y??raw.x:raw;
+          if(v==null||v===0)return;
+          const text=chartLabelText(v,lblOpts);
+          if(!text)return;
+          if(horizontal){
+            drawValueLabel(ctx,text,el.x+Math.max(18,text.length*3.2),el.y,'left');
+          }else if(ch.config.type==='line'){
+            drawValueLabel(ctx,text,el.x,el.y-14);
+          }else if(stacked){
+            const midY=(el.base+el.y)/2;
+            if(Math.abs(el.base-el.y)<16)return;
+            drawValueLabel(ctx,text,el.x,midY);
+          }else{
+            drawValueLabel(ctx,text,el.x,el.y-10);
+          }
+        });
+      });
+      ctx.restore();
+    }};
+    const pieLabels={id:'pieLabels',afterDatasetsDraw(ch){
+      if(!['pie','doughnut'].includes(ch.config.type))return;
+      const ds=ch.data.datasets[0],total=ds.data.reduce((a,b)=>a+b,0); if(!total)return; const {ctx}=ch; ctx.save();
+      ch.getDatasetMeta(0).data.forEach((arc,i)=>{const v=ds.data[i];if(!v)return; const pct=Math.round(v/total*100); if(pct<2)return;
+        const pos=arc.tooltipPosition();
+        drawValueLabel(ctx,chartLabelText(v,{compact:true}),pos.x,pos.y-6);
+        ctx.font='500 9px IBM Plex Sans'; ctx.fillStyle='#d8d6d3'; ctx.textAlign='center'; ctx.fillText(pct+'%',pos.x,pos.y+10);});
+      ctx.restore();
+    }};
+    Chart.register(barLabels,pieLabels);
+
+    const chartOpts={responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:18}},
+      plugins:{legend:{labels:{color:'#8a8683',font:{family:"'IBM Plex Sans'",size:11}}},barLabels:{force:true},pieLabels:true},
+      scales:{
+        x:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'#2a2a2a55'}},
+        y:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'#2a2a2a55'},beginAtZero:true}
+      }};
+    const pieOpts={responsive:true,maintainAspectRatio:false,cutout:'54%',
+      plugins:{legend:{position:'right',labels:{color:'#9a9693',font:{size:10}}},pieLabels:true}};
+
+    function pickColor(c,i){return Array.isArray(c)?(c[i]??c[0]):c;}
+
+    function morphDataset(ds, viewType, chartType) {
+      if (chartType === 'line') {
+        const col = pickColor(ds.backgroundColor, 0) || pickColor(ds.borderColor, 0) || '#c9a227';
+        const isArea = viewType === 'area';
+        return {
+          ...ds,
+          type: 'line',
+          borderColor: col,
+          backgroundColor: isArea ? col + '55' : ((ds.fill ?? false) ? col + '33' : col + '33'),
+          fill: isArea ? true : (ds.fill ?? false),
+          tension: ds.tension ?? 0.25,
+          pointRadius: ds.pointRadius ?? 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: Array.isArray(ds.backgroundColor) ? ds.backgroundColor : col,
+          borderWidth: ds.borderWidth ?? 2,
+        };
+      }
+      return { ...ds, type: 'bar', borderWidth: ds.borderWidth ?? 0 };
+    }
+
+    function morphChartType(cfg, viewType) {
+      if (!cfg || cfg.type === 'pie' || cfg.type === 'doughnut') return cfg;
+      if (cfg.options?.indexAxis === 'y') return cfg;
+      const chartType = viewType === 'line' || viewType === 'area' ? 'line' : 'bar';
+      const out = {
+        ...cfg,
+        type: chartType,
+        data: {
+          labels: cfg.data.labels,
+          datasets: cfg.data.datasets.map(ds => morphDataset(ds, viewType, chartType)),
+        },
+      };
+      if (chartType === 'line' && out.options?.scales) {
+        const scales = { ...out.options.scales };
+        if (scales.x) scales.x = { ...scales.x, stacked: viewType === 'area' };
+        if (scales.y) scales.y = { ...scales.y, stacked: viewType === 'area' };
+        out.options = { ...out.options, scales };
+      }
+      return out;
+    }
+
+    function chartScopeFor(id) {
+      if (chartScopes.avg.includes(id)) return 'avg';
+      if (chartScopes.calc.includes(id)) return 'calc';
+      if (chartScopes.brawl?.includes(id)) return 'brawl';
+      if (chartScopes.clan?.includes(id)) return 'clan';
+      return null;
+    }
+
+    function setChart(id, cfg) {
+      chartSpecs[id] = cfg;
+      const el = $(id);
+      if (!el) return;
+      const scope = chartScopeFor(id);
+      const want = scope ? chartViewTypes[scope] : 'bar';
+      const final = cfg.skipMorph ? cfg : morphChartType(cfg, want);
+      if (charts[id]) charts[id].destroy();
+      charts[id] = new Chart(el, final);
+    }
+
+    function redrawScopedCharts(scope) {
+      (chartScopes[scope] || []).forEach(id => { if (chartSpecs[id]) setChart(id, chartSpecs[id]); });
+    }
+
+    function initChartTypeToggles() {
+      document.querySelectorAll('.chart-type-toggle[data-scope]').forEach(toggle => {
+        const scope = toggle.dataset.scope;
+        toggle.querySelectorAll('button[data-type]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            chartViewTypes[scope] = btn.dataset.type;
+            toggle.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+            if (scope === 'avg') { fullRender(); return; }
+            redrawScopedCharts(scope);
+            const panel = scope === 'brawl' ? 'brawl' : 'calc';
+            resizePanelCharts(panel);
+          });
+        });
+      });
+    }
+    function doughnutData(vals,labs,cols){const f=vals.map((v,i)=>({v,l:labs[i],c:cols[i]})).filter(x=>x.v>0);
+      if(!f.length)return{labels:['—'],datasets:[{data:[1],backgroundColor:['#2a2a2a']}]};
+      return{labels:f.map(x=>x.l),datasets:[{data:f.map(x=>x.v),backgroundColor:f.map(x=>x.c)}]};}
+
+    function syncTierBar(){
+      const rank=$('tourRank').value, off=$('tourMode').value==='off';
+      const play = PLAY_MODES[activePlayMode];
+      $('tierBar').classList.toggle('off',off);
+      $('tierHint').classList.toggle('show',off);
+      const playLbl = tierSelected && play ? ` · ${play.name}` : '';
+      $('heroMode').textContent = !tierSelected ? 'Выберите тир'
+        : off ? `Межсезонье · 2400/800${playLbl}` : `${rank}-тир · ${TIER[rank].rating}${playLbl}`;
+      $('heroMode').style.color = !tierSelected ? 'var(--muted)' : off ? '#5c7a8a' : tierColor(rank);
+      document.querySelectorAll('.tier-cell').forEach(el=>{
+        const t=el.dataset.tier, active=tierSelected&&!off&&t===rank;
+        el.classList.toggle('active',active);
+        el.style.setProperty('--tc',tierColor(t));
+      });
+      renderPlayModes();
+      renderAuditLine();
+      const activePanel = document.querySelector('.panel.active')?.id?.replace('panel-','') || 'overview';
+      syncSidePanels(activePanel);
+    }
+
+    function selectTier(rank){
+      $('tourMode').value='rank';
+      $('tourRank').value=rank;
+      tierSelected=true;
+      fullRender();
+    }
+
+    function applyPlayMode(id) {
+      if (!PLAY_MODES[id] || !tierSelected) return;
+      activePlayMode = id;
+      fullRender();
+    }
+
+    function resizePanelCharts(name) {
+      requestAnimationFrame(() => {
+        const panel = $('panel-' + name);
+        if (!panel) return;
+        panel.querySelectorAll('canvas').forEach((cv) => {
+          const ch = charts[cv.id];
+          if (ch) { ch.resize(); ch.update('none'); }
+        });
+      });
+    }
+
+    function syncSidePanels(name) {
+      const tune = $('sideTune');
+      if (tune) tune.style.display = name === 'brawl' ? 'none' : '';
+      document.querySelectorAll('.side-block').forEach((el) => {
+        const panels = (el.dataset.panels || '').split(',');
+        let show = panels.includes(name);
+        if (name === 'brawl') {
+          if (el.id === 'sideTour' || el.id === 'sideBrawl') show = false;
+        } else if (show && name !== 'overview') {
+          if (el.id === 'sideTour' && activePlayMode === 'brawl') show = false;
+          if (el.id === 'sideBrawl' && activePlayMode === 'tour') show = false;
+        }
+        el.classList.toggle('show', show);
+      });
+    }
+
+    function syncLayout(name) {
+      const showHero = name === 'calc' || name === 'clan';
+      $('heroSection').style.display = showHero ? '' : 'none';
+      $('calcMain').style.display = (name === 'calc' || name === 'clan') ? '' : 'none';
+      if (name === 'calc') $('calcTitle').textContent = 'Калькулятор · неделя';
+      else if (name === 'clan') $('calcTitle').textContent = 'Расчёт · казна';
+      $('kpis').style.display = name === 'calc' ? '' : 'none';
+      syncSidePanels(name);
+    }
+
+    function brawlPanelState() {
+      return {
+        days: [1, 1, 1, 0, 0, 0],
+        tourMode: 'rank',
+        tourRank: $('tourRank').value || 'C',
+        tourDay: $('tourDay').value || '2w1l',
+        clanPct: readClanPct(),
+        playerPct: 100,
+      };
+    }
+
+    function switchPanel(name){
+      syncClanPctInputs(name);
+      document.querySelectorAll('#tabs .tab, .side-lab-btn').forEach(t => t.classList.toggle('active', t.dataset.panel === name));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      $('panel-' + name)?.classList.add('active');
+      syncLayout(name);
+      resizePanelCharts(name);
+    }
+
+    function buildTierBar(){
+      $('tierBar').innerHTML=TIERS.map(r=>`<button type="button" class="tier-cell" data-tier="${r}" style="--tc:${tierColor(r)}">
+        <span class="r">${r}</span><span class="sub">${TIER[r].rating}</span>
+        <span class="pay"><span class="w">${WIN[r]}</span> / <span class="l">${LOSE[r]}</span></span></button>`).join('');
+      $('tierBar').querySelectorAll('.tier-cell').forEach(btn=>btn.addEventListener('click',()=>selectTier(btn.dataset.tier)));
+    }
+
+    function tourConditionLabel(s) { return RECORD_LABELS[s.tourDay]; }
+
+    function renderPlayModes() {
+      const off = $('tourMode').value === 'off';
+      const rank = $('tourRank').value;
+      const tc = !tierSelected ? 'var(--muted)' : off ? '#5c7a8a' : tierColor(rank);
+      const pill = $('scenarioTierPill');
+      pill.textContent = !tierSelected ? '—' : off ? 'Межс' : rank;
+      pill.style.color = tc;
+      pill.style.borderColor = tc;
+      const s = tierSelected ? readState() : null;
+      $('playModeDesc').textContent = !tierSelected
+        ? 'Сначала выберите тир'
+        : (() => {
+            const parts = [];
+            if (off) parts.push('Межсезонье');
+            else parts.push(`${rank}-тир · ${TIER[rank].rating}`);
+            if (activePlayMode !== 'brawl') parts.push(`турнир: ${tourConditionLabel(s)}`);
+            if (activePlayMode !== 'tour') parts.push(`потасовки: ${s.clanPct}%`);
+            return parts.join(' · ');
+          })();
+
+      $('playModes').innerHTML = Object.entries(PLAY_MODES).map(([id, pm]) => {
+        const preview = tierSelected ? compute(stateWithPlayMode(id)) : null;
+        const disabled = !tierSelected ? ' disabled style="opacity:0.45;pointer-events:none"' : '';
+        const metrics = preview ? [
+          id !== 'brawl' ? `<div><dt>Турнир</dt><dd>${preview.weekTour.toLocaleString('ru')}</dd></div>` : '',
+          id !== 'tour' ? `<div><dt>Потасовки</dt><dd>${preview.weekBrawl.toLocaleString('ru')}</dd></div>` : '',
+          `<div><dt>Итого</dt><dd>${preview.weekTotal.toLocaleString('ru')}</dd></div>`,
+        ].filter(Boolean).join('') : '';
+        return `<button type="button" class="scenario-card${id === activePlayMode ? ' active' : ''}" data-id="${id}" style="--tc:${tc}"${disabled}>
+          <h3>${pm.name}</h3>
+          <p class="scenario-lead">${pm.desc}</p>
+          ${preview ? `<dl class="scenario-metrics">${metrics}</dl>` : '<p class="scenario-lead">—</p>'}
+        </button>`;
+      }).join('');
+
+      $('playModes').querySelectorAll('.scenario-card').forEach(btn => {
+        btn.onclick = () => applyPlayMode(btn.dataset.id);
+      });
+    }
+
+    const AVG_DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+    function avgTierColor(r) { return r === 'Межс' ? '#5c7a8a' : tierColor(r); }
+
+    function avgDailyTreasury(c) {
+      return c.total.map((_, i) => {
+        if (i < 3) return c.brawlPart[i] ? c.bt * 3 - OFFICIAL.brawl.reg : 0;
+        if (i < 6) return c.tourPart[i] ? c.tt - OFFICIAL.tour.reg : 0;
+        return 0;
+      }).slice(0, 6);
+    }
+
+    function buildAvgChartData(barPick, linePick, tierRows) {
+      const isLine = chartViewTypes.avg === 'line';
+      if (!isLine) {
+        return {
+          labels: [...TIERS, 'Межс'],
+          datasets: [{
+            data: barPick(tierRows),
+            backgroundColor: [...TIERS.map(r => tierColor(r) + 'cc'), '#5c7a8acc'],
+          }],
+        };
+      }
+      return {
+        labels: AVG_DAY_LABELS,
+        datasets: tierRows.map(({ r, c }) => {
+          const col = avgTierColor(r);
+          return {
+            label: r,
+            data: linePick(c),
+            borderColor: col,
+            backgroundColor: col + '33',
+            pointBackgroundColor: col,
+            pointBorderColor: col,
+            fill: false,
+            tension: 0.25,
+            pointRadius: 4,
+            borderWidth: 2,
+          };
+        }),
+      };
+    }
+
+    function renderAvgPanel() {
+      const rows = TIERS.map(r => {
+        const c = compute(buildAvgState(r, 'rank'));
+        return { r, c, mode: 'rank' };
+      });
+      const offC = compute(buildAvgState('C', 'off'));
+      const tierRows = [...rows, { r: 'Межс', c: offC }];
+      const hl = tierSelected && $('tourMode').value === 'rank' ? $('tourRank').value : null;
+      const isLine = chartViewTypes.avg === 'line';
+      const avgLegend = isLine ? { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } } : { display: false };
+
+      $('avgTable').innerHTML = `<thead><tr>
+        <th>Тир</th>
+        <th class="num">Победа за этап</th>
+        <th class="num">Турнир за день (3 этапа)</th>
+        <th class="num">Турнир за неделю (Чт–Сб)</th>
+        <th class="num">Потасовки за день (3 этапа)</th>
+        <th class="num">Потасовки за неделю (Пн–Ср)</th>
+        <th class="num">Итого за неделю</th>
+        <th class="num">Чистая казна, ₽</th>
+      </tr></thead><tbody>
+        ${rows.map(({ r, c }) => `<tr${r === hl ? ' class="hl"' : ''}>
+          <td style="color:${tierColor(r)}">${r}</td>
+          <td class="num">${WIN[r].toLocaleString('ru')}</td>
+          <td class="num">${c.tp.toLocaleString('ru')}</td>
+          <td class="num">${c.weekTour.toLocaleString('ru')}</td>
+          <td class="num">${c.bp.toLocaleString('ru')}</td>
+          <td class="num">${c.weekBrawl.toLocaleString('ru')}</td>
+          <td class="num"><strong>${c.weekTotal.toLocaleString('ru')}</strong></td>
+          <td class="num">${c.weekTreasuryNet.toLocaleString('ru')}</td>
+        </tr>`).join('')}
+        <tr${$('tourMode').value === 'off' ? ' class="hl"' : ''}>
+          <td style="color:#5c7a8a">Межс</td>
+          <td class="num">2400</td>
+          <td class="num">${offC.tp.toLocaleString('ru')}</td>
+          <td class="num">${offC.weekTour.toLocaleString('ru')}</td>
+          <td class="num">${offC.bp.toLocaleString('ru')}</td>
+          <td class="num">${offC.weekBrawl.toLocaleString('ru')}</td>
+          <td class="num"><strong>${offC.weekTotal.toLocaleString('ru')}</strong></td>
+          <td class="num">${offC.weekTreasuryNet.toLocaleString('ru')}</td>
+        </tr>
+      </tbody>`;
+
+      const avgType = isLine ? 'line' : 'bar';
+      const avgLbl = { force: !isLine };
+      const avgMoney = { force: !isLine, money: true };
+      const avgPlugins = (money) => ({ ...chartOpts.plugins, legend: avgLegend, barLabels: money ? avgMoney : avgLbl });
+      const treasuryTicks = { ...chartOpts.scales.y.ticks, callback: v => (v / 1_000_000).toFixed(1) + ' млн' };
+
+      setChart('chartAvgWeek', {
+        type: avgType,
+        data: buildAvgChartData(
+          rows => rows.map(x => x.c.weekTotal),
+          c => c.total.slice(0, 6),
+          tierRows,
+        ),
+        options: { ...chartOpts, plugins: avgPlugins(false) },
+        skipMorph: true,
+      });
+      setChart('chartAvgTourDay', {
+        type: avgType,
+        data: buildAvgChartData(
+          rows => rows.map(x => x.c.weekTour),
+          c => c.tourPart.slice(0, 6),
+          tierRows,
+        ),
+        options: { ...chartOpts, plugins: avgPlugins(false) },
+        skipMorph: true,
+      });
+      setChart('chartAvgBrawlDay', {
+        type: avgType,
+        data: buildAvgChartData(
+          rows => rows.map(x => x.c.weekBrawl),
+          c => c.brawlPart.slice(0, 6),
+          tierRows,
+        ),
+        options: { ...chartOpts, plugins: avgPlugins(false) },
+        skipMorph: true,
+      });
+      setChart('chartAvgTreasury', {
+        type: avgType,
+        data: buildAvgChartData(
+          rows => rows.map(x => x.c.weekTreasuryNet),
+          c => avgDailyTreasury(c),
+          tierRows,
+        ),
+        options: {
+          ...chartOpts,
+          plugins: avgPlugins(true),
+          scales: { ...chartOpts.scales, y: { ...chartOpts.scales.y, ticks: isLine ? chartOpts.scales.y.ticks : treasuryTicks } },
+        },
+        skipMorph: true,
+      });
+    }
+
+    function runAudit(s, c) {
+      const checks = [];
+      const r = s.tourRank;
+      if (s.tourMode === 'rank') {
+        checks.push(['П этап', c.w, WIN[r]]);
+        checks.push(['Р этап', c.l, LOSE[r]]);
+      } else {
+        checks.push(['П этап', c.w, OFFICIAL.tour.off.win.shells]);
+        checks.push(['Р этап', c.l, OFFICIAL.tour.off.lose.shells]);
+      }
+      checks.push(['турнир/день', c.tp, dayTotalFixed(s.tourMode, r, s.tourDay)]);
+      checks.push(['казна/день', c.tt, dayTreasuryFixed(s.tourMode, r, s.tourDay)]);
+      return checks.every(([, got, want]) => got === want);
+    }
+
+    function renderAuditLine() {
+      const el = $('auditLine');
+      if (!el) return;
+      if (!tierSelected) { el.textContent = ''; return; }
+      const s = readState(), c = compute(s);
+      const ok = runAudit(s, c);
+      const tierLbl = s.tourMode === 'off' ? 'межсезонье' : `${s.tourRank}-тир`;
+      const play = PLAY_MODES[activePlayMode].name;
+      if (ok) {
+        el.textContent = `✓ ${tierLbl} · ${play} · ${tourConditionLabel(s)} · ${c.weekTotal.toLocaleString('ru')} гильз/нед`;
+        el.style.color = 'var(--win)';
+      } else {
+        el.textContent = `⚠ ${tierLbl} · проверьте условия турнира в сайдбаре`;
+        el.style.color = 'var(--lose)';
+      }
+    }
+
+    function buildBrawlEconTable() {
+      const rows = BRAWL_ECON_KEYS.map(({ key, label, unit, step, pool }) => {
+        const val = pool === false ? OFFICIAL.brawl[key] : OFFICIAL.brawl.pool[key];
+        const id = pool === false ? `econ_${key}` : `econ_pool_${key}`;
+        return `<tr data-econ="${key}" data-pool="${pool !== false}">
+          <td>${label}</td><td class="num"><input type="number" id="${id}" value="${val}" min="0" step="${step}" /></td><td>${unit}</td>
+          <td class="num live-val" id="live_${id}">—</td></tr>`;
+      }).join('');
+      $('brawlEconTable').innerHTML = `<thead><tr><th>Параметр</th><th class="num">Значение</th><th>Ед.</th><th class="num">При ${readClanPct()}%</th></tr></thead><tbody>${rows}</tbody>`;
+      $('brawlEconTable').querySelectorAll('input').forEach((inp) => {
+        inp.addEventListener('input', () => {
+          readBrawlInputsToState();
+          saveBrawlSettingsDebounced();
+          fullRender();
+        });
+      });
+    }
+
+    function renderBrawlEconLive(s) {
+      const th = $('brawlEconTable')?.querySelector('th:last-child');
+      if (th) th.textContent = `При ${s.clanPct}%`;
+      BRAWL_ECON_KEYS.forEach(({ key, pool }) => {
+        const id = pool === false ? `econ_${key}` : `econ_pool_${key}`;
+        const live = $(`live_${id}`);
+        if (!live) return;
+        if (key === 'shells') live.textContent = brawlStage(s.clanPct, 100);
+        else if (key === 'treasury') live.textContent = rub(brawlClanTreasury(s.clanPct));
+        else if (pool !== false && key !== 'shells' && key !== 'treasury') live.textContent = brawlClanPoolShare(s.clanPct, key);
+        else if (key === 'minShare') live.textContent = s.clanPct < OFFICIAL.brawl.minShare ? '0' : 'OK';
+        else if (key === 'reg') live.textContent = rub(OFFICIAL.brawl.reg);
+      });
+    }
+
+    function playModeOk(kind) {
+      if (kind === 'brawl' && activePlayMode === 'tour') return false;
+      if (kind === 'tour' && activePlayMode === 'brawl') return false;
+      return true;
+    }
+
+    function blockVisible(blocks, s) {
+      if (blocks.includes('tierCompare')) {
+        return playModeOk('tour') && s?.tourMode === 'rank';
+      }
+      if (blocks.includes('tour') && !playModeOk('tour')) return false;
+      return blocks.includes('common') || blocks.includes('tour');
+    }
+
+    function syncPlayModeBlocks(s) {
+      const panel = $('panel-calc');
+      if (!panel) return;
+      if (!tierSelected) {
+        panel.querySelectorAll('[data-block]').forEach(el => { el.style.display = 'none'; });
+        const head = $('calcPanelHead');
+        if (head) head.textContent = 'Расчёт · выберите тир и режим игры';
+        return;
+      }
+      panel.querySelectorAll('[data-block]').forEach(el => {
+        const blocks = (el.dataset.block || '').split(',').map(b => b.trim());
+        el.style.display = blockVisible(blocks, s) ? '' : 'none';
+      });
+      const head = $('calcPanelHead');
+      if (!head) return;
+      if (!tierSelected) {
+        head.textContent = 'Расчёт · выберите тир и режим игры';
+        return;
+      }
+      const pm = PLAY_MODES[activePlayMode];
+      const cond = s ? (activePlayMode !== 'brawl' ? tourConditionLabel(s) : `доля ${s.clanPct}%`) : '';
+      head.textContent = `${pm.name} · ${pm.desc}${cond ? ' · ' + cond : ''}`;
+    }
+
+    function renderCalc(s,c){
+      const panel = document.querySelector('.panel.active')?.id?.replace('panel-','') || 'calc';
+      const all=[
+        {lbl:'Потасовки / этап',val:c.bs,panels:['calc'],kind:'brawl'},
+        {lbl:'Потасовки / день',val:c.bp,panels:['calc'],kind:'brawl'},
+        {lbl:'Турнир Win / Lose',val:`${c.w} / ${c.l}`,panels:['calc'],kind:'tour'},
+        {lbl:'Турнир / день · гильзы',val:c.tp,panels:['calc'],kind:'tour'},
+        {lbl:'Турнир / день · казна',val:c.tt,panels:['calc','clan'],kind:'tour'},
+        {lbl:'Потасовки / нед',val:c.weekBrawl,panels:['calc'],kind:'brawl'},
+        {lbl:'Турнир / нед · гильзы',val:c.weekTour,panels:['calc'],kind:'tour'},
+        {lbl:'Турнир / нед · казна',val:c.weekTourTreasury,panels:['calc','clan'],kind:'tour'},
+        {lbl:'Регистрации / нед',val:c.regTotal,panels:['calc','clan'],kind:'both'},
+        {lbl:'Казна / нед',val:c.weekTreasuryNet,panels:['calc','clan'],kind:'both'},
+        {lbl:'Итого гильз',val:c.weekTotal,total:true,panels:['calc','clan'],kind:'both'},
+      ];
+      const items = all.filter(x => x.panels.includes(panel) && playModeOk(x.kind));
+      $('calcGrid').innerHTML=items.map(x=>`<div class="calc-item${x.total?' total':''}${x.exp?' exp':''}">
+        <div class="lbl">${x.lbl}</div><div class="val">${typeof x.val==='number'?x.val.toLocaleString('ru'):x.val}</div></div>`).join('');
+    }
+
+    function renderKpis(s,c){
+      const rows=[
+        ['Тир',s.tourMode==='off'?'Межс.':s.tourRank,s.tourMode==='off'?'2400/800':TIER[s.tourRank].rating,'both'],
+        ['Неделя',c.weekTotal,'гильз','both'],
+        ['Турнир',c.tp,RECORD_LABELS[s.tourDay],'tour'],
+        ['Потасовки',c.bp,`${rub(c.bt*3)}/день`,'brawl'],
+        ['Казна',c.weekTreasuryNet.toLocaleString('ru'),'₽','both'],
+      ].filter(([,,,kind])=>{
+        if (kind === 'tour') return playModeOk('tour');
+        if (kind === 'brawl') return playModeOk('brawl');
+        return true;
+      });
+      $('kpis').innerHTML=rows.map(([k,v,u],i)=>`<div class="kpi${i===0?' hl':''}"><div class="k">${k}</div>
+        <div class="v" style="${i===0?'color:'+(s.tourMode==='off'?'#5c7a8a':tierColor(s.tourRank)):''}">${v}</div><div class="u">${u}</div></div>`).join('');
+    }
+
+    function renderBrawlRows(s, c) {
+      $('brawlRows').innerHTML = `
+        <tr><th>Статья</th><th class="num">Этап</th><th class="num">День</th><th class="num">Неделя</th></tr>
+        <tr><td>Гильзы игроку</td><td class="num">${c.bs}</td><td class="num">${c.bp}</td><td class="num">${c.weekBrawl}</td></tr>
+        <tr><td>Казна клана</td><td class="num">${rub(c.bt)}</td><td class="num">${rub(c.bt * 3)}</td><td class="num">${rub(c.weekBrawlTreasury)}</td></tr>
+        <tr><td>Влияние</td><td class="num">${brawlClanInfluence(s.clanPct)}</td><td class="num">${brawlClanInfluence(s.clanPct) * 3}</td><td class="num">${brawlClanInfluence(s.clanPct) * 3 * c.bd}</td></tr>
+        <tr><td>Батареи</td><td class="num">${brawlClanBatteries(s.clanPct)}</td><td class="num">${brawlClanBatteries(s.clanPct) * 3}</td><td class="num">${brawlClanBatteries(s.clanPct) * 3 * c.bd}</td></tr>
+        <tr><td>Рыжий Папоротник</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern') * 3 * c.bd}</td></tr>
+        <tr><td>Вещество</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance') * 3 * c.bd}</td></tr>
+        <tr><td>Остатки Пси-Маячка</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon') * 3 * c.bd}</td></tr>
+        <tr><td>Гамма</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma') * 3 * c.bd}</td></tr>`;
+    }
+
+    function renderBrawlCompare(s) {
+      const oldM = brawlMetrics(BRAWL_OLD, s.clanPct, 100, 3);
+      const newM = brawlMetrics(OFFICIAL.brawl, s.clanPct, 100, 3);
+      const rows = [
+        ['Банк гильз / этап', BRAWL_OLD.pool.shells, OFFICIAL.brawl.pool.shells, false],
+        ['Казна банк / этап', BRAWL_OLD.pool.treasury, OFFICIAL.brawl.pool.treasury, true],
+        ['Влияние банк / этап', BRAWL_OLD.pool.influence, OFFICIAL.brawl.pool.influence, false],
+        ['Батареи банк / этап', BRAWL_OLD.pool.batteries, OFFICIAL.brawl.pool.batteries, false],
+        ['Рыжий Папоротник / этап', BRAWL_OLD.pool.fern, OFFICIAL.brawl.pool.fern, false],
+        ['Вещество / этап', BRAWL_OLD.pool.substance, OFFICIAL.brawl.pool.substance, false],
+        ['Остатки Пси-Маячка / этап', BRAWL_OLD.pool.psiBeacon, OFFICIAL.brawl.pool.psiBeacon, false],
+        ['Гамма / этап', BRAWL_OLD.pool.gamma, OFFICIAL.brawl.pool.gamma, false],
+        ['Гильзы игроку / этап', oldM.bs, newM.bs, false],
+        ['Гильзы / день (×3)', oldM.bp, newM.bp, false],
+        ['Гильзы / неделя (Пн–Ср)', oldM.weekShells, newM.weekShells, false],
+        ['Казна / этап', oldM.bt, newM.bt, true],
+        ['Казна / день', oldM.dayTreasury, newM.dayTreasury, true],
+        ['Казна валовая / нед', oldM.weekTreasury, newM.weekTreasury, true],
+        ['Регистрации / нед', oldM.weekReg, newM.weekReg, true],
+        ['Казна чистая / нед', oldM.weekNet, newM.weekNet, true],
+      ];
+      const fmtVal = (v, money) => money ? rub(v) : v.toLocaleString('ru');
+      $('brawlCompareTable').innerHTML = `
+        <thead><tr><th>Метрика</th><th class="num">Было</th><th class="num">Сейчас</th><th class="num">Δ</th></tr></thead>
+        <tbody>${rows.map(([lbl, o, n, money]) => {
+          const delta = pctDelta(o, n);
+          const cls = n > o ? 'delta-up' : n < o ? 'delta-down' : '';
+          return `<tr><td>${lbl}</td><td class="num">${fmtVal(o, money)}</td><td class="num">${fmtVal(n, money)}</td><td class="num ${cls}">${delta}</td></tr>`;
+        }).join('')}</tbody>`;
+    }
+
+    function brawlShareLabels() { return BRAWL_SHARE_SWEEP.map(p => p + '%'); }
+    function highlightShareColor(p, cur, base, active) {
+      return Math.round(p) === Math.round(cur) ? active : base;
+    }
+
+    function renderBrawlCharts(s, c) {
+      const pool = brawlPool();
+      const isLine = chartViewTypes.brawl === 'line';
+      const shareLbl = brawlShareLabels();
+      const legendBottom = { display: true, position: 'bottom', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } };
+      renderBrawlEconLive(s);
+
+      setChart('chartBrawlAnShells', {
+        type: isLine ? 'line' : 'bar',
+        data: {
+          labels: shareLbl,
+          datasets: [{
+            label: 'Гильзы / этап',
+            data: BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)),
+            backgroundColor: BRAWL_SHARE_SWEEP.map(p => highlightShareColor(p, s.clanPct, '#5d8a6677', '#c9a227')),
+            borderColor: '#5d8a66',
+            borderWidth: isLine ? 2 : 0,
+            tension: 0.25,
+            pointRadius: isLine ? 4 : 0,
+          }],
+        },
+        options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: { display: false } } },
+      });
+
+      setChart('chartBrawlAnClan', {
+        type: isLine ? 'line' : 'bar',
+        data: {
+          labels: shareLbl,
+          datasets: [
+            {
+              label: 'Казна, тыс ₽',
+              data: BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p) / 1000),
+              backgroundColor: isLine ? 'transparent' : '#c9a22777',
+              borderColor: '#c9a227',
+              borderWidth: isLine ? 2 : 1,
+              tension: 0.25,
+              pointRadius: isLine ? 3 : 0,
+            },
+            {
+              label: 'Влияние',
+              data: BRAWL_SHARE_SWEEP.map(p => brawlClanInfluence(p)),
+              backgroundColor: isLine ? 'transparent' : '#5c7a8a77',
+              borderColor: '#5c7a8a',
+              borderWidth: isLine ? 2 : 1,
+              tension: 0.25,
+              pointRadius: isLine ? 3 : 0,
+            },
+          ],
+        },
+        options: {
+          ...chartOpts,
+          plugins: { ...chartOpts.plugins, legend: legendBottom },
+          scales: {
+            ...chartOpts.scales,
+            y: { ...chartOpts.scales.y, ticks: { ...chartOpts.scales.y.ticks, callback: v => v >= 1000 ? (v / 1000) + 'k' : v } },
+          },
+        },
+      });
+
+      setChart('chartBrawlAnMats', {
+        type: isLine ? 'line' : 'bar',
+        data: {
+          labels: shareLbl,
+          datasets: [
+            { label: 'Папоротник', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'fern')), borderColor: '#7a9a5c', backgroundColor: isLine ? 'transparent' : '#7a9a5c77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
+            { label: 'Вещество', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'substance')), borderColor: '#9a6a8a', backgroundColor: isLine ? 'transparent' : '#9a6a8a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
+            { label: 'Пси-Маячок', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'psiBeacon')), borderColor: '#6a8a9a', backgroundColor: isLine ? 'transparent' : '#6a8a9a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
+            { label: 'Гамма', data: BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'gamma')), borderColor: '#b87a4a', backgroundColor: isLine ? 'transparent' : '#b87a4a77', borderWidth: isLine ? 2 : 1, tension: 0.25, pointRadius: isLine ? 3 : 0 },
+          ],
+        },
+        options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: legendBottom } },
+      });
+
+      setChart('chartBrawlAnPool', {
+        type: 'bar',
+        skipMorph: true,
+        data: {
+          labels: ['Гильзы', 'Казна ₽', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси-Маячок', 'Гамма'],
+          datasets: [{
+            label: 'Банк / этап',
+            data: [pool.shells, pool.treasury / 1000, pool.influence, pool.batteries, pool.fern, pool.substance, pool.psiBeacon, pool.gamma],
+            backgroundColor: ['#5d8a66', '#c9a227', '#5c7a8a', '#8a7a5c', '#7a9a5c', '#9a6a8a', '#6a8a9a', '#b87a4a'],
+          }],
+        },
+        options: {
+          ...chartOpts,
+          plugins: { ...chartOpts.plugins, legend: { display: false } },
+          scales: {
+            ...chartOpts.scales,
+            y: { ...chartOpts.scales.y, ticks: { ...chartOpts.scales.y.ticks, callback: v => v >= 1000 ? (v / 1000) + 'k' : v } },
+          },
+        },
+      });
+
+      const deltaKeys = [
+        ['Гильзы', 'shells'], ['Казна', 'treasury'], ['Влияние', 'influence'], ['Батареи', 'batteries'],
+        ['Папоротник', 'fern'], ['Вещество', 'substance'], ['Пси-Маячок', 'psiBeacon'], ['Гамма', 'gamma'],
+      ];
+      const deltaVals = deltaKeys.map(([, k]) => {
+        const o = BRAWL_OLD.pool[k] || 0;
+        const n = OFFICIAL.brawl.pool[k] || 0;
+        if (!o) return n ? 100 : 0;
+        return ((n - o) / o) * 100;
+      });
+      setChart('chartBrawlAnDelta', {
+        type: 'bar',
+        skipMorph: true,
+        data: {
+          labels: deltaKeys.map(([lbl]) => lbl),
+          datasets: [{
+            label: 'Δ %',
+            data: deltaVals,
+            backgroundColor: deltaVals.map(v => v > 0 ? '#5d8a66bb' : v < 0 ? '#a85c5cbb' : '#6b6560bb'),
+          }],
+        },
+        options: {
+          ...chartOpts,
+          indexAxis: 'y',
+          plugins: {
+            ...chartOpts.plugins,
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => `${ctx.parsed.x >= 0 ? '+' : ''}${ctx.parsed.x.toFixed(1)}%` } },
+          },
+          scales: {
+            ...chartOpts.scales,
+            x: { ...chartOpts.scales.x, ticks: { ...chartOpts.scales.x.ticks, callback: v => `${v}%` } },
+          },
+        },
+      });
+    }
+
+    function renderBrawlPanel() {
+      const s = brawlPanelState();
+      const c = compute(s);
+      $('brawlPanelHead').textContent = `Тестовый раздел · доля ${s.clanPct}% · ${c.bs} г/этап · ${c.bp} г/день · ${c.weekBrawl} г/нед`;
+      renderBrawlCompare(s);
+      renderBrawlRows(s, c);
+      renderBrawlCharts(s, c);
+    }
+
+    function renderTables(s,c){
+      $('clanTable').innerHTML=`
+        <tr><th>Статья</th><th class="num">₽</th></tr>
+        ${playModeOk('brawl') && c.bd ? `<tr><td class="in">Потасовки</td><td class="num in">+${c.weekBrawlTreasury.toLocaleString('ru')}</td></tr>` : ''}
+        ${playModeOk('tour') && c.td ? `<tr><td class="in">Турнир</td><td class="num in">+${c.weekTourTreasury.toLocaleString('ru')}</td></tr>` : ''}
+        <tr><td class="out">Регистрации</td><td class="num out">−${c.regTotal.toLocaleString('ru')}</td></tr>
+        <tr><td><strong>Баланс</strong></td><td class="num"><strong>${c.weekTreasuryNet.toLocaleString('ru')}</strong></td></tr>`;
+      $('regTable').innerHTML=`
+        <tr><th>Статья</th><th class="num">₽</th></tr>
+        ${c.bd?`<tr><td>Потасовки ×${c.bd}</td><td class="num">${(OFFICIAL.brawl.reg*c.bd).toLocaleString('ru')}</td></tr>`:''}
+        ${c.td?`<tr><td>Турнир ×${c.td}</td><td class="num">${(OFFICIAL.tour.reg*c.td).toLocaleString('ru')}</td></tr>`:''}
+        <tr><td><strong>Итого</strong></td><td class="num"><strong>${c.regTotal.toLocaleString('ru')}</strong></td></tr>`;
+    }
+
+    function renderCharts(s,c){
+      const tc=s.tourMode==='off'?'#5c7a8a':tierColor(s.tourRank);
+      const stacked = playModeOk('brawl') && playModeOk('tour');
+      const weeklyDs = [];
+      if (playModeOk('brawl')) weeklyDs.push({ label:'Потасовки', data:c.brawlPart, backgroundColor:'#5d8a66bb', stack:'s' });
+      if (playModeOk('tour')) weeklyDs.push({ label:'Турнир', data:c.tourPart, backgroundColor:tc+'bb', stack:'s' });
+      setChart('chartWeekly',{type:'bar',data:{labels:DAYS,datasets:weeklyDs.length?weeklyDs:[{label:'Гильзы',data:c.total,backgroundColor:tc+'bb'}]},
+        options:{...chartOpts,plugins:{...chartOpts.plugins,barLabels:{force:true}},
+          scales:{...chartOpts.scales,x:{...chartOpts.scales.x,stacked},y:{...chartOpts.scales.y,stacked}}}});
+      let cum=0;
+      const cumulData = c.total.map(v => (cum += v));
+      setChart('chartCumul',{type:'line',data:{labels:DAYS,datasets:[{label:'Накоплено',data:cumulData,borderColor:tc,backgroundColor:tc+'33',fill:true,tension:0.25,pointRadius:5}]},
+        options:{...chartOpts,plugins:{...chartOpts.plugins,barLabels:{force:true}}}});
+      if (playModeOk('tour') && s.tourMode === 'rank') {
+        const tierVals = TIERS.map(r => weekTotalForTier(s, r));
+        const selIdx = TIERS.indexOf(s.tourRank);
+        const base = tierVals[selIdx] || 1;
+        setChart('chartTierCompare', {
+          type: 'bar',
+          data: {
+            labels: TIERS,
+            datasets: [{
+              label: 'Гильзы / неделя',
+              data: tierVals,
+              backgroundColor: TIERS.map((r, i) => tierColor(r) + (i === selIdx ? 'ee' : '44')),
+            }],
+          },
+          options: {
+            ...chartOpts,
+            plugins: {
+              ...chartOpts.plugins,
+              legend: { display: false },
+              barLabels: { force: true },
+              tooltip: {
+                callbacks: {
+                  label(ctx) {
+                    const v = Number(ctx.raw);
+                    const pct = Math.round(v / base * 100);
+                    return ctx.label === s.tourRank
+                      ? `${v.toLocaleString('ru')} г · 100%`
+                      : `${v.toLocaleString('ru')} г · ${pct}% от ${s.tourRank}`;
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+      if ($('panel-clan')?.classList.contains('active')) {
+        setChart('chartTreasury', { type: 'bar', data: { labels: ['Доход', 'Расход', 'Баланс'],
+          datasets: [{ data: [c.weekBrawlTreasury + c.weekTourTreasury, c.regTotal, c.weekTreasuryNet],
+            backgroundColor: ['#5d8a66', '#a85c5c', '#c9a227'] }] },
+          options: { ...chartOpts, plugins: { ...chartOpts.plugins, legend: { display: false } } } });
+      }
+    }
+
+    function fullRender(){
+      if(suppressRender)return;
+      const activePanel = document.querySelector('.panel.active')?.id?.replace('panel-','') || 'overview';
+      if (activePanel === 'overview') {
+        renderAvgPanel();
+        syncTierBar();
+        resizePanelCharts('overview');
+        return;
+      }
+      if (activePanel === 'brawl') {
+        renderBrawlPanel();
+        syncSidePanels('brawl');
+        resizePanelCharts('brawl');
+        return;
+      }
+      if (!tierSelected) {
+        $('calcGrid').innerHTML = '<div class="calc-placeholder">Выберите тир и режим игры клана</div>';
+        $('kpis').innerHTML = '';
+        syncPlayModeBlocks(null);
+        syncTierBar();
+        return;
+      }
+      const s=readState(),c=compute(s);
+      renderCalc(s,c); renderKpis(s,c);
+      renderTables(s,c); renderCharts(s,c); syncPlayModeBlocks(s); syncTierBar();
+      resizePanelCharts(activePanel);
+    }
+
+    function onChange(){ fullRender(); }
+
+    document.querySelector('.side').addEventListener('click', e => {
+      const t = e.target.closest('[data-panel]');
+      if (t && (t.classList.contains('tab') || t.classList.contains('side-lab-btn'))) {
+        switchPanel(t.dataset.panel);
+        fullRender();
+      }
+    });
+    $('tourMode').addEventListener('change',()=>{ if ($('tourMode').value==='off') tierSelected=true; onChange(); });
+    ['tourDay','clanPct','clanPctLab'].forEach(id=>{
+      const el=$(id);
+      if (!el) return;
+      el.addEventListener('change', () => {
+        if (id === 'clanPctLab' && $('clanPct')) $('clanPct').value = el.value;
+        if (id === 'clanPct' && $('clanPctLab')) $('clanPctLab').value = el.value;
+        if (id === 'clanPct' || id === 'clanPctLab') saveBrawlSettingsDebounced();
+        onChange();
+      });
+      el.addEventListener('input', () => {
+        if (id === 'clanPctLab' && $('clanPct')) $('clanPct').value = el.value;
+        if (id === 'clanPct' && $('clanPctLab')) $('clanPctLab').value = el.value;
+        if (id === 'clanPct' || id === 'clanPctLab') saveBrawlSettingsDebounced();
+        onChange();
+      });
+    });
+
+    loadBrawlSettings();
+    buildTierBar(); buildBrawlEconTable(); initChartTypeToggles();
+    tierSelected=false; $('tourRank').value='C'; activePlayMode='both';
+    syncLayout('overview'); fullRender();
+  </script>
+</body>
+</html>
