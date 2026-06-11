@@ -308,7 +308,7 @@
             <div class="lbl" style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.35rem">Потасовки</div>
             <div class="field"><label>Доля клана %</label><input type="number" id="clanPct" value="48" min="0" max="100" step="0.1" /></div>
             <input type="hidden" id="playerPct" value="100" />
-            <p class="note" style="margin-top:0.4rem">Банк 1500 гильз + 1,5 млн ₽/группа за этап.</p>
+            <p class="note" style="margin-top:0.4rem">Банк 1750 гильз + 500 тыс ₽/группа за этап.</p>
           </div>
         </details>
       </div>
@@ -447,7 +447,7 @@
 
   <script>
     const OFFICIAL = {
-      brawl: { pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 }, maxShellsPlayer: 1000, minShare: 5, reg: 100_000 },
+      brawl: { pool: { shells: 1750, treasury: 500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 }, minShare: 5, reg: 100_000 },
       tour: { off: { win: { shells: 2400, treasury: 700_000 }, lose: { shells: 800, treasury: 350_000 } }, reg: 200_000 },
     };
     const BRAWL_OLD = {
@@ -544,7 +544,7 @@
 
     function getBrawlDefaults() {
       return {
-        pool: { shells: 1500, treasury: 1_500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 },
+        pool: { shells: 1750, treasury: 500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 },
         minShare: 5,
         reg: 100_000,
         clanPct: 48,
@@ -557,6 +557,8 @@
         if (!raw) return;
         const data = JSON.parse(raw);
         const defs = getBrawlDefaults();
+        if (data.pool?.shells === 1500) data.pool.shells = 1750;
+        if (data.pool?.treasury === 1_500_000) data.pool.treasury = 500_000;
         Object.assign(OFFICIAL.brawl.pool, defs.pool, data.pool || {});
         if (data.minShare != null) OFFICIAL.brawl.minShare = data.minShare;
         if (data.reg != null) OFFICIAL.brawl.reg = data.reg;
@@ -614,10 +616,14 @@
       if (name === 'brawl') lab.value = side.value;
       else side.value = lab.value;
     }
+    function brawlPlayerShells(b, clanPct, p) {
+      if (clanPct < b.minShare) return 0;
+      const raw = Math.round(b.pool.shells * clanPct / 100 * p / 100);
+      return b.maxShellsPlayer != null ? Math.min(b.maxShellsPlayer, raw) : raw;
+    }
     function brawlStage(clanPct, playerPct, cfg) {
       const b = cfg || OFFICIAL.brawl, p = playerPct ?? 100;
-      if (clanPct < b.minShare) return 0;
-      return Math.min(b.maxShellsPlayer, Math.round(b.pool.shells * clanPct / 100 * p / 100));
+      return brawlPlayerShells(b, clanPct, p);
     }
     function brawlClanTreasury(clanPct, cfg) { const b = cfg || OFFICIAL.brawl; return clanPct < b.minShare ? 0 : Math.round(b.pool.treasury * clanPct / 100); }
     function brawlClanPoolShare(clanPct, key, cfg) {
@@ -632,7 +638,7 @@
       if (clanPct < b.minShare) {
         return { bs: 0, bt: 0, bi: 0, bb: 0, bp: 0, dayTreasury: 0, weekShells: 0, weekTreasury: 0, weekReg: 0, weekNet: 0 };
       }
-      const bs = Math.min(b.maxShellsPlayer, Math.round(b.pool.shells * clanPct / 100 * p / 100));
+      const bs = brawlPlayerShells(b, clanPct, p);
       const bt = Math.round(b.pool.treasury * clanPct / 100);
       const bi = Math.round(b.pool.influence * clanPct / 100);
       const bb = Math.round(b.pool.batteries * clanPct / 100);
