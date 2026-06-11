@@ -16,7 +16,6 @@
 ```
 index.html                      — входная страница
 calculator/shells-charts.html   — калькулятор
-calculator/resources-flow.html  — редирект на калькулятор
 ```
 
 ## Локальный запуск

@@ -79,11 +79,7 @@
       box-shadow: 0 0 0 1px #5d8a6655, 0 4px 14px #5d8a6622;
     }
     .side-lab-btn .lab-title { display: block; line-height: 1.25; }
-    .side-lab-btn small {
-      display: block; font-size: 0.64rem; color: #7a9a82;
-      margin-top: 0.2rem; font-weight: 400; line-height: 1.35;
-    }
-    .side-lab-btn.active small { color: #8ab896; }
+    .side-lab-btn small { display: none; }
     .side-head { margin-bottom: 0.85rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border); }
     .side h1 { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
     .side .title { font-size: 1.05rem; font-weight: 600; margin: 0.15rem 0 0.2rem; }
@@ -191,9 +187,11 @@
     .scenario-card.active .scenario-badge { background: color-mix(in srgb, var(--tc, var(--accent)) 22%, var(--surface3)); color: var(--text); }
     .scenario-card h3 { font-size: 0.82rem; font-weight: 600; margin-bottom: 0.15rem; }
     .scenario-lead { font-size: 0.64rem; color: var(--muted); margin-bottom: 0.45rem; line-height: 1.35; }
-    .scenario-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; }
+    .scenario-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.25rem; }
     .scenario-metrics div { background: var(--surface2); border-radius: 4px; padding: 0.28rem 0.3rem; text-align: center; }
+    .scenario-metrics .scenario-total { grid-column: 1 / -1; border: 1px solid var(--border); }
     .scenario-card.active .scenario-metrics div { background: #14120e; }
+    .scenario-card.active .scenario-metrics .scenario-total { border-color: color-mix(in srgb, var(--tc, var(--accent)) 40%, var(--border)); }
     .scenario-metrics dt { font-size: 0.52rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
     .scenario-metrics dd { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; margin-top: 0.08rem; }
     .audit-ok { font-size: 0.62rem; color: var(--win); margin-top: 0.35rem; font-family: var(--mono); }
@@ -264,7 +262,7 @@
     .avg-table td, .avg-table th { font-size: 0.72rem; }
     .avg-table th { text-transform: none; letter-spacing: 0; font-size: 0.68rem; white-space: normal; line-height: 1.3; vertical-align: bottom; }
     .avg-table tr.hl td { background: #1a1810; }
-    .play-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.45rem; }
+    .play-modes { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 152px), 1fr)); gap: 0.4rem; }
     @media (max-width: 560px) { .play-modes { grid-template-columns: 1fr; } }
     .calc-placeholder { color: var(--muted); font-size: 0.8rem; padding: 1rem; text-align: center; border: 1px dashed var(--border); border-radius: var(--rs); }
     .brawl-setup { border-color: #3d5c44; background: linear-gradient(180deg, #141a15 0%, var(--surface) 100%); }
@@ -306,9 +304,8 @@
 
           <div class="side-block" id="sideBrawl" data-panels="calc,clan">
             <div class="lbl" style="font-size:0.6rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:0.35rem">Потасовки</div>
-            <div class="field"><label>Доля клана %</label><input type="number" id="clanPct" value="48" min="0" max="100" step="0.1" /></div>
+            <div class="field"><label>Доля клана %</label><input type="number" id="clanPct" value="50" min="0" max="100" step="10" /></div>
             <input type="hidden" id="playerPct" value="100" />
-            <p class="note" style="margin-top:0.4rem">Банк 1750 гильз + 500 тыс ₽/группа за этап.</p>
           </div>
         </details>
       </div>
@@ -317,7 +314,6 @@
         <div class="side-lab-tag">Тестовый раздел <span class="side-lab-badge">LAB</span></div>
         <button type="button" class="side-lab-btn" data-panel="brawl" id="tabBrawl">
           <span class="lab-title">Потасовки · тест банка</span>
-          <small>Песочница · правка пула · Пн–Ср</small>
         </button>
       </div>
     </aside>
@@ -357,6 +353,7 @@
           <div class="chart-type-toggle" data-scope="avg">
             <button type="button" class="active" data-type="bar">Столбцы</button>
             <button type="button" data-type="line">Линия</button>
+            <button type="button" data-type="area">Область</button>
           </div>
         </div>
         <div class="grid" style="margin-top:0.65rem">
@@ -371,6 +368,10 @@
           <div class="card">
             <div class="card-head"><h2>Потасовки · гильзы / неделя</h2></div>
             <div class="chart-wrap"><canvas id="chartAvgBrawlDay"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2>Захваты баз · гильзы / неделя</h2></div>
+            <div class="chart-wrap"><canvas id="chartAvgBaseDay"></canvas></div>
           </div>
           <div class="card wide">
             <div class="card-head"><h2>Казна / неделя · MAX</h2></div>
@@ -401,6 +402,22 @@
             <h2>Накопление</h2>
             <div class="chart-wrap tall"><canvas id="chartCumul"></canvas></div>
           </div>
+          <div class="card" data-block="mix" id="cardMix">
+            <h2>Структура гильз</h2>
+            <div class="chart-wrap"><canvas id="chartMix"></canvas></div>
+          </div>
+          <div class="card wide" data-block="record" id="cardRecord">
+            <h2>Сценарий счёта · неделя</h2>
+            <div class="chart-wrap tall"><canvas id="chartRecord"></canvas></div>
+          </div>
+          <div class="card" data-block="brawlShare" id="cardBrawlShare">
+            <h2>Гильзы при доле клана</h2>
+            <div class="chart-wrap tall"><canvas id="chartBrawlShare"></canvas></div>
+          </div>
+          <div class="card" data-block="marginal" id="cardMarginal">
+            <h2>Отдача +10% вклада</h2>
+            <div class="chart-wrap"><canvas id="chartMarginal"></canvas></div>
+          </div>
         </div>
       </div>
 
@@ -408,7 +425,7 @@
         <div class="card wide brawl-setup">
           <h2>Пул наград <span class="brawl-save-hint" id="brawlSaveHint"></span></h2>
           <div class="brawl-setup-row">
-            <div class="field brawl-clan-field"><label>Доля клана %</label><input type="number" id="clanPctLab" value="48" min="0" max="100" step="0.1" /></div>
+            <div class="field brawl-clan-field"><label>Доля клана %</label><input type="number" id="clanPctLab" value="50" min="0" max="100" step="10" /></div>
           </div>
           <table class="econ-table" id="brawlEconTable"></table>
         </div>
@@ -422,14 +439,20 @@
           <div class="chart-type-toggle" data-scope="brawl">
             <button type="button" class="active" data-type="bar">Столбцы</button>
             <button type="button" data-type="line">Линия</button>
+            <button type="button" data-type="area">Область</button>
           </div>
         </div>
         <div class="grid brawl-charts-grid">
           <div class="card"><h2>Гильзы при доле клана</h2><div class="chart-wrap"><canvas id="chartBrawlAnShells"></canvas></div></div>
           <div class="card"><h2>Казна и влияние</h2><div class="chart-wrap"><canvas id="chartBrawlAnClan"></canvas></div></div>
           <div class="card"><h2>Материалы при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnMats"></canvas></div></div>
+          <div class="card"><h2>Казна при доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnTreasury"></canvas></div></div>
           <div class="card"><h2>Ресурсы за неделю</h2><div class="chart-wrap"><canvas id="chartBrawlAnWeek"></canvas></div></div>
-          <div class="card"><h2>Гильзы · этап → неделя</h2><div class="chart-wrap"><canvas id="chartBrawlAnPace"></canvas></div></div>
+          <div class="card"><h2>Гильзы по дням</h2><div class="chart-wrap"><canvas id="chartBrawlAnDaySplit"></canvas></div></div>
+          <div class="card wide"><h2>Гильзы · этап → неделя</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnPace"></canvas></div></div>
+          <div class="card"><h2>Накопление по доле</h2><div class="chart-wrap"><canvas id="chartBrawlAnCumulPct"></canvas></div></div>
+          <div class="card"><h2>Отдача +10% вклада</h2><div class="chart-wrap"><canvas id="chartBrawlAnMarginal"></canvas></div></div>
+          <div class="card"><h2>Структура пула</h2><div class="chart-wrap"><canvas id="chartBrawlAnPool"></canvas></div></div>
           <div class="card wide"><h2>Было → Сейчас</h2><div class="chart-wrap tall"><canvas id="chartBrawlAnDelta"></canvas></div></div>
           <div class="card wide"><h2>Детализация потасовок</h2><table id="brawlRows"></table></div>
         </div>
@@ -449,6 +472,7 @@
     const OFFICIAL = {
       brawl: { pool: { shells: 1750, treasury: 500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 }, minShare: 5, reg: 100_000 },
       tour: { off: { win: { shells: 2400, treasury: 700_000 }, lose: { shells: 800, treasury: 350_000 } }, reg: 200_000 },
+      base: { win: { shells: 7000, treasury: 850_000 }, lose: { shells: 3000, treasury: 425_000 }, reg: 200_000 },
     };
     const BRAWL_OLD = {
       pool: { shells: 1500, treasury: 500_000, influence: 10_000, batteries: 100, fern: 0, substance: 0, psiBeacon: 0, gamma: 0 },
@@ -485,25 +509,34 @@
     const RECORD_KEYS = ['3w','2w1l','1w2l','3l'];
 
     const PLAY_MODES = {
-      tour:  { name:'Только турниры', desc:'Чт · Пт · Сб', days:[0,0,0,1,1,1] },
-      both:  { name:'Турниры + потасовки', desc:'Пн – Сб', days:[1,1,1,1,1,1] },
-      brawl: { name:'Только потасовки', desc:'Пн · Вт · Ср', days:[1,1,1,0,0,0] },
+      brawl:      { name:'Только потасовки',              desc:'Пн · Вт · Ср · Вс', weekPlan:['brawl','brawl','brawl',null,null,null,'brawl'] },
+      tour:       { name:'Только турниры',                desc:'Чт · Пт · Сб',      weekPlan:[null,null,null,'tour','tour','tour',null] },
+      bases:      { name:'Только захваты баз',            desc:'Вс',                weekPlan:[null,null,null,null,null,null,'base'] },
+      brawlTour:  { name:'Потасовки + турниры',           desc:'Пн – Сб',           weekPlan:['brawl','brawl','brawl','tour','tour','tour',null] },
+      tourBases:  { name:'Турниры + захваты баз',         desc:'Чт – Вс',           weekPlan:[null,null,null,'tour','tour','tour','base'] },
+      brawlBases: { name:'Потасовки + захваты баз',       desc:'Пн – Ср · Вс',      weekPlan:['brawl','brawl','brawl',null,null,null,'base'] },
+      full:       { name:'Потасовки + турниры + базы',    desc:'Пн – Вс',           weekPlan:['brawl','brawl','brawl','tour','tour','tour','base'] },
     };
+    const PLAY_MODE_IDS = ['brawl','tour','bases','brawlTour','tourBases','brawlBases','full'];
+    const DEFAULT_PLAY_MODE = 'brawlTour';
+    const AVG_BRAWL_PLAN = ['brawl','brawl','brawl','tour','tour','tour','brawl'];
+    const AVG_BASE_PLAN = [null,null,null,null,null,null,'base'];
 
     const charts = {};
     const chartSpecs = {};
     const chartScopes = {
-      avg: ['chartAvgWeek', 'chartAvgTourDay', 'chartAvgBrawlDay', 'chartAvgTreasury'],
-      calc: ['chartTierCompare', 'chartWeekly', 'chartCumul'],
-      brawl: ['chartBrawlAnShells', 'chartBrawlAnClan', 'chartBrawlAnMats', 'chartBrawlAnWeek', 'chartBrawlAnPace', 'chartBrawlAnDelta'],
+      avg: ['chartAvgWeek', 'chartAvgTourDay', 'chartAvgBrawlDay', 'chartAvgBaseDay', 'chartAvgTreasury'],
+      calc: ['chartTierCompare', 'chartWeekly', 'chartCumul', 'chartMix', 'chartRecord', 'chartBrawlShare', 'chartMarginal'],
+      brawl: ['chartBrawlAnShells', 'chartBrawlAnClan', 'chartBrawlAnMats', 'chartBrawlAnTreasury', 'chartBrawlAnWeek',
+        'chartBrawlAnDaySplit', 'chartBrawlAnPace', 'chartBrawlAnCumulPct', 'chartBrawlAnMarginal', 'chartBrawlAnPool', 'chartBrawlAnDelta'],
       clan: ['chartTreasury'],
     };
     let chartViewTypes = { avg: 'bar', calc: 'bar', brawl: 'bar' };
-    let activePlayMode = 'both';
+    let activePlayMode = DEFAULT_PLAY_MODE;
     let tierSelected = false;
     let suppressRender = false;
     const BRAWL_STORAGE_KEY = 'stalcraft-shells-brawl-v2';
-    const BRAWL_SHARE_SWEEP = [0, 5, 10, 20, 34, 48, 51, 68, 85, 100];
+    const BRAWL_SHARE_SWEEP = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
     let brawlSaveTimer = null;
 
     function $(id) { return document.getElementById(id); }
@@ -542,12 +575,19 @@
 
     function brawlPool() { return OFFICIAL.brawl.pool; }
 
+    const BRAWL_LAB = {
+      pool: { shells: 1750, treasury: 500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 },
+      minShare: 5,
+      reg: 100_000,
+    };
+    function brawlLabCfg() { return BRAWL_LAB; }
+
     function getBrawlDefaults() {
       return {
         pool: { shells: 1750, treasury: 500_000, influence: 10_000, batteries: 100, fern: 125, substance: 125, psiBeacon: 150, gamma: 90 },
         minShare: 5,
         reg: 100_000,
-        clanPct: 48,
+        clanPct: 50,
       };
     }
 
@@ -559,12 +599,13 @@
         const defs = getBrawlDefaults();
         if (data.pool?.shells === 1500) data.pool.shells = 1750;
         if (data.pool?.treasury === 1_500_000) data.pool.treasury = 500_000;
-        Object.assign(OFFICIAL.brawl.pool, defs.pool, data.pool || {});
-        if (data.minShare != null) OFFICIAL.brawl.minShare = data.minShare;
-        if (data.reg != null) OFFICIAL.brawl.reg = data.reg;
+        Object.assign(BRAWL_LAB.pool, defs.pool, data.pool || {});
+        if (data.minShare != null) BRAWL_LAB.minShare = data.minShare;
+        if (data.reg != null) BRAWL_LAB.reg = data.reg;
         if (data.clanPct != null) {
-          if ($('clanPctLab')) $('clanPctLab').value = data.clanPct;
-          if ($('clanPct')) $('clanPct').value = data.clanPct;
+          const pct = clampClanPct(data.clanPct);
+          if ($('clanPctLab')) $('clanPctLab').value = pct;
+          if ($('clanPct')) $('clanPct').value = pct;
         }
       } catch (_) { /* ignore corrupt storage */ }
     }
@@ -581,9 +622,9 @@
     function saveBrawlSettings() {
       try {
         localStorage.setItem(BRAWL_STORAGE_KEY, JSON.stringify({
-          pool: { ...OFFICIAL.brawl.pool },
-          minShare: OFFICIAL.brawl.minShare,
-          reg: OFFICIAL.brawl.reg,
+          pool: { ...BRAWL_LAB.pool },
+          minShare: BRAWL_LAB.minShare,
+          reg: BRAWL_LAB.reg,
           clanPct: readClanPct(),
         }));
         flashBrawlSaved();
@@ -601,14 +642,24 @@
         const el = $(id);
         if (!el) return;
         const v = +el.value;
-        if (pool === false) OFFICIAL.brawl[key] = v;
-        else OFFICIAL.brawl.pool[key] = v;
+        if (pool === false) BRAWL_LAB[key] = v;
+        else BRAWL_LAB.pool[key] = v;
       });
+    }
+    function clampClanPct(val) {
+      const n = Number(val);
+      if (!Number.isFinite(n)) return 0;
+      return Math.min(100, Math.max(0, n));
+    }
+    function applyClanPctClamp(el) {
+      if (!el) return;
+      const v = clampClanPct(el.value);
+      if (el.value !== '' && String(v) !== el.value) el.value = v;
     }
     function readClanPct() {
       const onBrawl = document.querySelector('.panel.active')?.id === 'panel-brawl';
-      if (onBrawl && $('clanPctLab')) return +$('clanPctLab').value;
-      return +($('clanPct')?.value ?? 48);
+      const raw = onBrawl && $('clanPctLab') ? $('clanPctLab').value : ($('clanPct')?.value ?? 50);
+      return clampClanPct(raw);
     }
     function syncClanPctInputs(name) {
       const side = $('clanPct'), lab = $('clanPctLab');
@@ -656,7 +707,7 @@
 
     function buildAvgState(rank, tourMode) {
       return {
-        days: [1, 1, 1, 1, 1, 1],
+        weekPlan: AVG_BRAWL_PLAN.slice(),
         tourMode: tourMode || 'rank',
         tourRank: rank,
         tourDay: '3w',
@@ -665,10 +716,29 @@
       };
     }
 
-    function readState() {
-      const mode = PLAY_MODES[activePlayMode] || PLAY_MODES.both;
+    function computeAvg(s) {
+      const c = compute({ ...s, weekPlan: AVG_BRAWL_PLAN });
+      const b = compute({ ...s, weekPlan: AVG_BASE_PLAN });
+      const total = DAYS.map((_, i) => (c.brawlPart[i] || 0) + (c.tourPart[i] || 0) + (b.basePart[i] || 0));
+      const regTotal = c.regBrawl + c.regTour + b.regBase;
       return {
-        days: mode.days.slice(),
+        ...c,
+        basePart: b.basePart,
+        weekBase: b.weekBase,
+        weekBaseTreasury: b.weekBaseTreasury,
+        regBase: b.regBase,
+        bps: b.bps,
+        btt: b.btt,
+        regTotal,
+        total,
+        weekTotal: c.weekBrawl + c.weekTour + b.weekBase,
+        weekTreasuryNet: c.weekBrawlTreasury + c.weekTourTreasury + b.weekBaseTreasury - regTotal,
+      };
+    }
+
+    function readState() {
+      return {
+        weekPlan: activeWeekPlan(),
         tourMode: $('tourMode').value,
         tourRank: $('tourRank').value,
         tourDay: $('tourDay').value,
@@ -679,31 +749,139 @@
 
     function stateWithPlayMode(playModeId) {
       const s = readState();
-      s.days = PLAY_MODES[playModeId].days.slice();
+      s.weekPlan = weekPlanFor(playModeId);
       return s;
     }
     function tourDayShells(s) { return dayTotalFixed(s.tourMode, s.tourRank, s.tourDay); }
     function tourDayTreasury(s) { return dayTreasuryFixed(s.tourMode, s.tourRank, s.tourDay); }
+    function baseDayShells(s) {
+      return RECORDS[s.tourDay].reduce((sum, w) => sum + (w ? OFFICIAL.base.win.shells : OFFICIAL.base.lose.shells), 0);
+    }
+    function baseDayTreasury(s) {
+      return RECORDS[s.tourDay].reduce((sum, w) => sum + (w ? OFFICIAL.base.win.treasury : OFFICIAL.base.lose.treasury), 0);
+    }
+    function weekPlanFor(playModeId) { return (PLAY_MODES[playModeId] || PLAY_MODES[DEFAULT_PLAY_MODE]).weekPlan.slice(); }
+    function activeWeekPlan() { return weekPlanFor(activePlayMode); }
+    function planHas(plan, kind) { return plan.some(ev => ev === kind); }
     function weekTotalForTier(s, rank) {
       return compute({ ...s, tourRank: rank }).weekTotal;
     }
 
     function compute(s) {
-      const bs=brawlStage(s.clanPct,s.playerPct), bp=bs*3, bt=brawlClanTreasury(s.clanPct);
-      const tp=tourDayShells(s), tt=tourDayTreasury(s);
-      const brawlPart=[],tourPart=[],total=[];
-      let weekBrawl=0,weekTour=0,weekBrawlTreasury=0,weekTourTreasury=0,regBrawl=0,regTour=0,bd=0,td=0;
-      for (let i=0;i<7;i++) {
-        const b=i<3&&s.days[i]?bp:0, t=i>=3&&i<6&&s.days[i]?tp:0;
-        brawlPart.push(b); tourPart.push(t); total.push(b+t);
-        weekBrawl+=b; weekTour+=t;
-        if (i<3&&s.days[i]) { regBrawl+=OFFICIAL.brawl.reg; bd++; weekBrawlTreasury+=bt*3; }
-        if (i>=3&&s.days[i]) { regTour+=OFFICIAL.tour.reg; td++; weekTourTreasury+=tt; }
+      const plan = s.weekPlan || weekPlanFor(DEFAULT_PLAY_MODE);
+      const bs = brawlStage(s.clanPct, s.playerPct), bp = bs * 3, bt = brawlClanTreasury(s.clanPct);
+      const tp = tourDayShells(s), tt = tourDayTreasury(s);
+      const bps = baseDayShells(s), btt = baseDayTreasury(s);
+      const brawlPart = [], tourPart = [], basePart = [], total = [];
+      let weekBrawl = 0, weekTour = 0, weekBase = 0;
+      let weekBrawlTreasury = 0, weekTourTreasury = 0, weekBaseTreasury = 0;
+      let regBrawl = 0, regTour = 0, regBase = 0, bd = 0, td = 0, bsd = 0;
+      for (let i = 0; i < 7; i++) {
+        const ev = plan[i];
+        const b = ev === 'brawl' ? bp : 0;
+        const t = ev === 'tour' ? tp : 0;
+        const ba = ev === 'base' ? bps : 0;
+        brawlPart.push(b); tourPart.push(t); basePart.push(ba);
+        total.push(b + t + ba);
+        weekBrawl += b; weekTour += t; weekBase += ba;
+        if (ev === 'brawl') { regBrawl += OFFICIAL.brawl.reg; bd++; weekBrawlTreasury += bt * 3; }
+        if (ev === 'tour') { regTour += OFFICIAL.tour.reg; td++; weekTourTreasury += tt; }
+        if (ev === 'base') { regBase += OFFICIAL.base.reg; bsd++; weekBaseTreasury += btt; }
       }
-      return { bs,bp,bt,tp,tt,brawlPart,tourPart,total,weekBrawl,weekTour,weekTotal:weekBrawl+weekTour,
-        weekBrawlTreasury,weekTourTreasury,weekTreasuryNet:weekBrawlTreasury+weekTourTreasury-regBrawl-regTour,
-        regBrawl,regTour,regTotal:regBrawl+regTour,bd,td,
-        w:stageShells(s.tourMode,s.tourRank,true), l:stageShells(s.tourMode,s.tourRank,false) };
+      const regTotal = regBrawl + regTour + regBase;
+      return {
+        bs, bp, bt, tp, tt, bps, btt, brawlPart, tourPart, basePart, total,
+        weekBrawl, weekTour, weekBase, weekTotal: weekBrawl + weekTour + weekBase,
+        weekBrawlTreasury, weekTourTreasury, weekBaseTreasury,
+        weekTreasuryNet: weekBrawlTreasury + weekTourTreasury + weekBaseTreasury - regTotal,
+        regBrawl, regTour, regBase, regTotal, bd, td, bsd,
+        w: stageShells(s.tourMode, s.tourRank, true), l: stageShells(s.tourMode, s.tourRank, false),
+      };
+    }
+
+    function computeBrawlLab(s) {
+      const cfg = BRAWL_LAB;
+      const plan = s.weekPlan || weekPlanFor('brawl');
+      const bs = brawlStage(s.clanPct, s.playerPct, cfg), bp = bs * 3, bt = brawlClanTreasury(s.clanPct, cfg);
+      const brawlPart = [], total = [];
+      let weekBrawl = 0, weekBrawlTreasury = 0, regBrawl = 0, bd = 0;
+      for (let i = 0; i < 7; i++) {
+        const b = plan[i] === 'brawl' ? bp : 0;
+        brawlPart.push(b);
+        total.push(b);
+        weekBrawl += b;
+        if (plan[i] === 'brawl') { regBrawl += cfg.reg; bd++; weekBrawlTreasury += bt * 3; }
+      }
+      return {
+        bs, bp, bt, brawlPart, total, weekBrawl, weekBrawlTreasury,
+        weekTreasuryNet: weekBrawlTreasury - regBrawl, regBrawl, bd,
+      };
+    }
+
+    function brawlPaceTimeline(s, cfg) {
+      const bs = brawlStage(s.clanPct, s.playerPct, cfg);
+      const plan = s.weekPlan || weekPlanFor('brawl');
+      const labels = [], perStage = [], cumulative = [];
+      let sum = 0;
+      for (let d = 0; d < 7; d++) {
+        if (plan[d] !== 'brawl') continue;
+        for (let st = 1; st <= 3; st++) {
+          labels.push(`${DAYS[d]}·${st}`);
+          perStage.push(bs);
+          sum += bs;
+          cumulative.push(sum);
+        }
+      }
+      return { labels, perStage, cumulative };
+    }
+
+    function brawlLabMarginalData(s, cfg) {
+      const bd = (s.weekPlan || weekPlanFor('brawl')).filter(ev => ev === 'brawl').length;
+      const labels = [], gains = [];
+      for (let i = 1; i < BRAWL_SHARE_SWEEP.length; i++) {
+        const prev = BRAWL_SHARE_SWEEP[i - 1], cur = BRAWL_SHARE_SWEEP[i];
+        labels.push(`${prev}→${cur}%`);
+        gains.push((brawlStage(cur, 100, cfg) - brawlStage(prev, 100, cfg)) * 3 * bd);
+      }
+      return { labels, gains, bd };
+    }
+
+    function brawlLabDaySplit(s, c) {
+      const labels = [], values = [];
+      for (let i = 0; i < 7; i++) {
+        if ((s.weekPlan || weekPlanFor('brawl'))[i] !== 'brawl') continue;
+        labels.push(DAYS[i]);
+        values.push(c.bp);
+      }
+      return { labels, values };
+    }
+
+    function brawlLabPoolSlice(s, cfg) {
+      const p = s.clanPct;
+      return {
+        labels: ['Гильзы', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси', 'Гамма'],
+        values: [
+          brawlStage(p, 100, cfg),
+          brawlClanPoolShare(p, 'influence', cfg),
+          brawlClanPoolShare(p, 'batteries', cfg),
+          brawlClanPoolShare(p, 'fern', cfg),
+          brawlClanPoolShare(p, 'substance', cfg),
+          brawlClanPoolShare(p, 'psiBeacon', cfg),
+          brawlClanPoolShare(p, 'gamma', cfg),
+        ],
+        keys: ['shells', 'influence', 'batteries', 'fern', 'substance', 'psi', 'gamma'],
+      };
+    }
+
+    function brawlLabChartOpts(extra = {}) {
+      const isArea = chartViewIsArea('brawl');
+      const isLine = chartScopeType('brawl') === 'line';
+      return makeChartOptions({
+        legend: extra.legend ?? chartLegend(false, 'brawl'),
+        barLabels: extra.barLabels ?? { force: !isLine && !isArea },
+        scales: extra.scales,
+        plugins: extra.plugins,
+      });
     }
 
     const barLabels={id:'barLabels',afterDatasetsDraw(ch){
@@ -749,11 +927,22 @@
     Chart.register(barLabels,pieLabels);
 
     const chartOpts={responsive:true,maintainAspectRatio:false,
+      animation:{duration:420,easing:'easeOutQuart'},
+      interaction:{mode:'index',intersect:false},
       layout:{padding:{top:18}},
-      plugins:{legend:{labels:{color:'#8a8683',font:{family:"'IBM Plex Sans'",size:11}}},barLabels:{force:true},pieLabels:true},
+      plugins:{
+        legend:{labels:{color:'#8a8683',font:{family:"'IBM Plex Sans'",size:11},boxWidth:10,usePointStyle:true,padding:12}},
+        tooltip:{
+          backgroundColor:'#161616f0',titleColor:'#eceae7',bodyColor:'#b0aca8',
+          borderColor:'#3a3a3a',borderWidth:1,padding:10,cornerRadius:6,
+          titleFont:{family:"'IBM Plex Sans'",size:12,weight:'600'},
+          bodyFont:{family:"'IBM Plex Mono'",size:11},
+        },
+        barLabels:{force:true},pieLabels:true,
+      },
       scales:{
-        x:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'#2a2a2a55'}},
-        y:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'#2a2a2a55'},beginAtZero:true}
+        x:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'rgba(42,42,42,0.28)',drawBorder:false}},
+        y:{ticks:{color:'#9a9693',font:{family:"'IBM Plex Mono'",size:10}},grid:{color:'rgba(42,42,42,0.38)',drawBorder:false},beginAtZero:true}
       }};
     const pieOpts={responsive:true,maintainAspectRatio:false,cutout:'54%',
       plugins:{legend:{position:'right',labels:{color:'#9a9693',font:{size:10}}},pieLabels:true}};
@@ -762,10 +951,10 @@
       palette: {
         shells: '#5d8a66', treasury: '#c9a227', influence: '#5c7a8a', batteries: '#8a7a5c',
         fern: '#7a9a5c', substance: '#9a6a8a', psi: '#6a8a9a', gamma: '#b87a4a',
-        brawl: '#5d8a66', win: '#5d8a66', lose: '#a85c5c', accent: '#c9a227', muted: '#6b6560',
+        brawl: '#5d8a66', base: '#b87a4a', win: '#5d8a66', lose: '#a85c5c', accent: '#c9a227', muted: '#6b6560',
         old: '#5c7a8a', new: '#c9a227',
       },
-      alpha: { bar: 'bb', barSoft: '77', lineArea: '33', dim: '44', hl: 'ee' },
+      alpha: { bar: 'bb', barSoft: '77', lineArea: '28', areaFill: '55', areaFillSoft: '3a', dim: '44', hl: 'ee' },
       line: { tension: 0.25, borderWidth: 2, pointRadius: 4, pointHoverRadius: 6 },
       bar: { borderWidth: 0, borderRadius: 3 },
       poolLabels: ['Гильзы', 'Казна ₽', 'Влияние', 'Батареи', 'Папоротник', 'Вещество', 'Пси-Маячок', 'Гамма'],
@@ -777,11 +966,15 @@
       return alpha ? c + (CHART_THEME.alpha[alpha] || alpha) : c;
     }
     function poolColors() { return CHART_THEME.poolKeys.map(k => chartColor(k)); }
-    function chartScopeType(scope) { return chartViewTypes[scope] === 'line' ? 'line' : 'bar'; }
+    function chartScopeType(scope) {
+      const t = chartViewTypes[scope];
+      return t === 'line' || t === 'area' ? 'line' : 'bar';
+    }
+    function chartViewIsArea(scope) { return chartViewTypes[scope] === 'area'; }
     function chartLegend(show, scope) {
       if (show === false) return { display: false };
       const multi = show === true || show === 'multi';
-      const isLine = scope && chartViewTypes[scope] === 'line';
+      const isLine = scope && (chartViewTypes[scope] === 'line' || chartViewTypes[scope] === 'area');
       if (!multi && !isLine) return { display: false };
       return {
         display: true,
@@ -825,6 +1018,7 @@
       return {
         label,
         data,
+        colorKey,
         borderColor: col,
         backgroundColor: chartColor(colorKey, 'lineArea'),
         pointBackgroundColor: col,
@@ -844,6 +1038,7 @@
       return {
         label,
         data,
+        colorKey: typeof colorKeyOrArr === 'string' ? colorKeyOrArr : extra.colorKey,
         backgroundColor: bg,
         borderWidth: CHART_THEME.bar.borderWidth,
         borderRadius: CHART_THEME.bar.borderRadius,
@@ -860,6 +1055,7 @@
       return {
         label,
         data,
+        colorKey,
         backgroundColor: chartColor(colorKey, 'barSoft'),
         borderColor: col,
         borderWidth: 1,
@@ -867,23 +1063,36 @@
       };
     }
 
-    function pickColor(c,i){return Array.isArray(c)?(c[i]??c[0]):c;}
+    function pickColor(c, i) { return Array.isArray(c) ? (c[i] ?? c[0]) : c; }
+
+    function resolveDatasetColor(ds, idx = 0) {
+      const bc = pickColor(ds.borderColor, idx);
+      if (typeof bc === 'string' && bc.startsWith('#')) return bc.slice(0, 7);
+      if (ds.colorKey) return chartColor(ds.colorKey);
+      const bg = pickColor(ds.backgroundColor, idx);
+      if (typeof bg === 'string' && bg.startsWith('#')) return bg.slice(0, 7);
+      return chartColor('accent');
+    }
 
     function morphDataset(ds, viewType, chartType) {
       if (chartType === 'line') {
-        const col = pickColor(ds.borderColor, 0) || pickColor(ds.backgroundColor, 0) || chartColor('accent');
+        const col = resolveDatasetColor(ds);
         const isArea = viewType === 'area';
+        const filled = isArea || ds.fill;
         return {
           ...ds,
           type: 'line',
           borderColor: col,
-          backgroundColor: isArea ? col + '55' : chartColor('accent', 'lineArea'),
-          fill: isArea ? true : (ds.fill ?? false),
+          backgroundColor: filled
+            ? col + (isArea ? CHART_THEME.alpha.areaFill : CHART_THEME.alpha.lineArea)
+            : 'transparent',
+          fill: isArea ? 'origin' : (ds.fill ?? false),
           tension: ds.tension ?? CHART_THEME.line.tension,
-          pointRadius: ds.pointRadius ?? CHART_THEME.line.pointRadius,
+          pointRadius: isArea ? 2 : (ds.pointRadius ?? CHART_THEME.line.pointRadius),
           pointHoverRadius: CHART_THEME.line.pointHoverRadius,
-          pointBackgroundColor: Array.isArray(ds.pointBackgroundColor) ? ds.pointBackgroundColor : col,
-          borderWidth: ds.borderWidth ?? CHART_THEME.line.borderWidth,
+          pointBackgroundColor: col,
+          pointBorderColor: col,
+          borderWidth: ds.borderWidth ?? (isArea ? 1.5 : CHART_THEME.line.borderWidth),
         };
       }
       return { ...ds, type: 'bar', borderWidth: ds.borderWidth ?? CHART_THEME.bar.borderWidth, borderRadius: ds.borderRadius ?? CHART_THEME.bar.borderRadius };
@@ -903,9 +1112,18 @@
       };
       if (chartType === 'line' && out.options?.scales) {
         const scales = { ...out.options.scales };
-        if (scales.x) scales.x = { ...scales.x, stacked: viewType === 'area' };
-        if (scales.y) scales.y = { ...scales.y, stacked: viewType === 'area' };
-        out.options = { ...out.options, scales };
+        const stackArea = viewType === 'area' && out.data.datasets.length > 1
+          && out.data.datasets.every(ds => ds.stack);
+        if (scales.x) scales.x = { ...scales.x, stacked: stackArea };
+        if (scales.y) scales.y = { ...scales.y, stacked: stackArea };
+        out.options = {
+          ...out.options,
+          scales,
+          elements: {
+            line: { borderJoinStyle: 'round' },
+            point: { hoverBorderWidth: 2 },
+          },
+        };
       }
       return out;
     }
@@ -1003,8 +1221,9 @@
         if (name === 'brawl') {
           if (el.id === 'sideTour' || el.id === 'sideBrawl') show = false;
         } else if (show && name !== 'overview') {
-          if (el.id === 'sideTour' && activePlayMode === 'brawl') show = false;
-          if (el.id === 'sideBrawl' && activePlayMode === 'tour') show = false;
+          const plan = activeWeekPlan();
+          if (el.id === 'sideTour' && !planHas(plan, 'tour') && !planHas(plan, 'base')) show = false;
+          if (el.id === 'sideBrawl' && !planHas(plan, 'brawl')) show = false;
         }
         el.classList.toggle('show', show);
       });
@@ -1022,7 +1241,7 @@
 
     function brawlPanelState() {
       return {
-        days: [1, 1, 1, 0, 0, 0],
+        weekPlan: weekPlanFor('brawl'),
         tourMode: 'rank',
         tourRank: $('tourRank').value || 'C',
         tourDay: $('tourDay').value || '2w1l',
@@ -1057,13 +1276,15 @@
       pill.textContent = !tierSelected ? '—' : off ? 'Межс' : rank;
       pill.style.color = tc;
       pill.style.borderColor = tc;
-      $('playModes').innerHTML = Object.entries(PLAY_MODES).map(([id, pm]) => {
+      $('playModes').innerHTML = PLAY_MODE_IDS.map(id => {
+        const pm = PLAY_MODES[id];
         const preview = tierSelected ? compute(stateWithPlayMode(id)) : null;
         const disabled = !tierSelected ? ' disabled style="opacity:0.45;pointer-events:none"' : '';
         const metrics = preview ? [
-          id !== 'brawl' ? `<div><dt>Турнир</dt><dd>${preview.weekTour.toLocaleString('ru')}</dd></div>` : '',
-          id !== 'tour' ? `<div><dt>Потасовки</dt><dd>${preview.weekBrawl.toLocaleString('ru')}</dd></div>` : '',
-          `<div><dt>Итого</dt><dd>${preview.weekTotal.toLocaleString('ru')}</dd></div>`,
+          preview.weekBrawl ? `<div><dt>Потасовки</dt><dd>${preview.weekBrawl.toLocaleString('ru')}</dd></div>` : '',
+          preview.weekTour ? `<div><dt>Турнир</dt><dd>${preview.weekTour.toLocaleString('ru')}</dd></div>` : '',
+          preview.weekBase ? `<div><dt>Базы</dt><dd>${preview.weekBase.toLocaleString('ru')}</dd></div>` : '',
+          `<div class="scenario-total"><dt>Итого</dt><dd>${preview.weekTotal.toLocaleString('ru')}</dd></div>`,
         ].filter(Boolean).join('') : '';
         return `<button type="button" class="scenario-card${id === activePlayMode ? ' active' : ''}" data-id="${id}" style="--tc:${tc}"${disabled}>
           <h3>${pm.name}</h3>
@@ -1077,20 +1298,22 @@
       });
     }
 
-    const AVG_DAY_LABELS = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+    const AVG_DAY_LABELS = DAYS;
 
     function avgTierColor(r) { return r === 'Межс' ? '#5c7a8a' : tierColor(r); }
 
     function avgDailyTreasury(c) {
       return c.total.map((_, i) => {
-        if (i < 3) return c.brawlPart[i] ? c.bt * 3 - OFFICIAL.brawl.reg : 0;
-        if (i < 6) return c.tourPart[i] ? c.tt - OFFICIAL.tour.reg : 0;
+        if (c.brawlPart[i]) return c.bt * 3 - OFFICIAL.brawl.reg;
+        if (c.tourPart[i]) return c.tt - OFFICIAL.tour.reg;
+        if (c.basePart[i]) return c.btt - OFFICIAL.base.reg;
         return 0;
-      }).slice(0, 6);
+      });
     }
 
     function buildAvgChartData(barPick, linePick, tierRows) {
-      const isLine = chartViewTypes.avg === 'line';
+      const isLine = chartViewTypes.avg === 'line' || chartViewTypes.avg === 'area';
+      const isArea = chartViewIsArea('avg');
       if (!isLine) {
         return {
           labels: [...TIERS, 'Межс'],
@@ -1110,10 +1333,11 @@
             label: r,
             data: linePick(c),
             borderColor: col,
-            backgroundColor: col + CHART_THEME.alpha.lineArea,
+            backgroundColor: col + (isArea ? CHART_THEME.alpha.areaFill : CHART_THEME.alpha.lineArea),
             pointBackgroundColor: col,
             pointBorderColor: col,
-            fill: false,
+            fill: isArea,
+            colorKey: r === 'Межс' ? 'influence' : undefined,
             tension: CHART_THEME.line.tension,
             pointRadius: CHART_THEME.line.pointRadius,
             pointHoverRadius: CHART_THEME.line.pointHoverRadius,
@@ -1125,16 +1349,16 @@
 
     function renderAvgPanel() {
       const rows = TIERS.map(r => {
-        const c = compute(buildAvgState(r, 'rank'));
+        const c = computeAvg(buildAvgState(r, 'rank'));
         return { r, c, mode: 'rank' };
       });
-      const offC = compute(buildAvgState('C', 'off'));
+      const offC = computeAvg(buildAvgState('C', 'off'));
       const tierRows = [...rows, { r: 'Межс', c: offC }];
       const hl = tierSelected && $('tourMode').value === 'rank' ? $('tourRank').value : null;
-      const isLine = chartViewTypes.avg === 'line';
+      const isLine = chartViewTypes.avg === 'line' || chartViewTypes.avg === 'area';
       const avgOpts = (money = false) => makeChartOptions({
         legend: chartLegend(isLine, 'avg'),
-        barLabels: money ? { force: !isLine, money: true } : { force: !isLine },
+        barLabels: money ? { force: !isLine, money: true } : { force: !isLine && !chartViewIsArea('avg') },
         scales: money && !isLine ? { y: { ...chartOpts.scales.y, ticks: scaleTicksMln() } } : undefined,
       });
 
@@ -1144,7 +1368,8 @@
         <th class="num">Турнир за день (3 этапа)</th>
         <th class="num">Турнир за неделю (Чт–Сб)</th>
         <th class="num">Потасовки за день (3 этапа)</th>
-        <th class="num">Потасовки за неделю (Пн–Ср)</th>
+        <th class="num">Потасовки за неделю (Пн–Ср · Вс)</th>
+        <th class="num">Базы за неделю (Вс)</th>
         <th class="num">Итого за неделю</th>
         <th class="num">Чистая казна, ₽</th>
       </tr></thead><tbody>
@@ -1155,6 +1380,7 @@
           <td class="num">${c.weekTour.toLocaleString('ru')}</td>
           <td class="num">${c.bp.toLocaleString('ru')}</td>
           <td class="num">${c.weekBrawl.toLocaleString('ru')}</td>
+          <td class="num">${c.weekBase.toLocaleString('ru')}</td>
           <td class="num"><strong>${c.weekTotal.toLocaleString('ru')}</strong></td>
           <td class="num">${c.weekTreasuryNet.toLocaleString('ru')}</td>
         </tr>`).join('')}
@@ -1165,6 +1391,7 @@
           <td class="num">${offC.weekTour.toLocaleString('ru')}</td>
           <td class="num">${offC.bp.toLocaleString('ru')}</td>
           <td class="num">${offC.weekBrawl.toLocaleString('ru')}</td>
+          <td class="num">${offC.weekBase.toLocaleString('ru')}</td>
           <td class="num"><strong>${offC.weekTotal.toLocaleString('ru')}</strong></td>
           <td class="num">${offC.weekTreasuryNet.toLocaleString('ru')}</td>
         </tr>
@@ -1176,31 +1403,41 @@
         type: avgType,
         data: buildAvgChartData(
           rows => rows.map(x => x.c.weekTotal),
-          c => c.total.slice(0, 6),
+          c => c.total,
           tierRows,
         ),
         options: avgOpts(false),
-        skipMorph: true,
+        skipMorph: chartViewTypes.avg === 'bar',
       });
       setChart('chartAvgTourDay', {
         type: avgType,
         data: buildAvgChartData(
           rows => rows.map(x => x.c.weekTour),
-          c => c.tourPart.slice(0, 6),
+          c => c.tourPart,
           tierRows,
         ),
         options: avgOpts(false),
-        skipMorph: true,
+        skipMorph: chartViewTypes.avg === 'bar',
       });
       setChart('chartAvgBrawlDay', {
         type: avgType,
         data: buildAvgChartData(
           rows => rows.map(x => x.c.weekBrawl),
-          c => c.brawlPart.slice(0, 6),
+          c => c.brawlPart,
           tierRows,
         ),
         options: avgOpts(false),
-        skipMorph: true,
+        skipMorph: chartViewTypes.avg === 'bar',
+      });
+      setChart('chartAvgBaseDay', {
+        type: avgType,
+        data: buildAvgChartData(
+          rows => rows.map(x => x.c.weekBase),
+          c => c.basePart,
+          tierRows,
+        ),
+        options: avgOpts(false),
+        skipMorph: chartViewTypes.avg === 'bar',
       });
       setChart('chartAvgTreasury', {
         type: avgType,
@@ -1210,7 +1447,7 @@
           tierRows,
         ),
         options: avgOpts(true),
-        skipMorph: true,
+        skipMorph: chartViewTypes.avg === 'bar',
       });
     }
 
@@ -1231,7 +1468,7 @@
 
     function buildBrawlEconTable() {
       const rows = BRAWL_ECON_KEYS.map(({ key, label, unit, step, pool }) => {
-        const val = pool === false ? OFFICIAL.brawl[key] : OFFICIAL.brawl.pool[key];
+        const val = pool === false ? BRAWL_LAB[key] : BRAWL_LAB.pool[key];
         const id = pool === false ? `econ_${key}` : `econ_pool_${key}`;
         return `<tr data-econ="${key}" data-pool="${pool !== false}">
           <td>${label}</td><td class="num"><input type="number" id="${id}" value="${val}" min="0" step="${step}" /></td><td>${unit}</td>
@@ -1242,38 +1479,109 @@
         inp.addEventListener('input', () => {
           readBrawlInputsToState();
           saveBrawlSettingsDebounced();
-          fullRender();
+          if ($('panel-brawl')?.classList.contains('active')) renderBrawlPanel();
         });
       });
     }
 
     function renderBrawlEconLive(s) {
+      const cfg = BRAWL_LAB;
       const th = $('brawlEconTable')?.querySelector('th:last-child');
       if (th) th.textContent = `При ${s.clanPct}%`;
       BRAWL_ECON_KEYS.forEach(({ key, pool }) => {
         const id = pool === false ? `econ_${key}` : `econ_pool_${key}`;
         const live = $(`live_${id}`);
         if (!live) return;
-        if (key === 'shells') live.textContent = brawlStage(s.clanPct, 100);
-        else if (key === 'treasury') live.textContent = rub(brawlClanTreasury(s.clanPct));
-        else if (pool !== false && key !== 'shells' && key !== 'treasury') live.textContent = brawlClanPoolShare(s.clanPct, key);
-        else if (key === 'minShare') live.textContent = s.clanPct < OFFICIAL.brawl.minShare ? '0' : 'OK';
-        else if (key === 'reg') live.textContent = rub(OFFICIAL.brawl.reg);
+        if (key === 'shells') live.textContent = brawlStage(s.clanPct, 100, cfg);
+        else if (key === 'treasury') live.textContent = rub(brawlClanTreasury(s.clanPct, cfg));
+        else if (pool !== false && key !== 'shells' && key !== 'treasury') live.textContent = brawlClanPoolShare(s.clanPct, key, cfg);
+        else if (key === 'minShare') live.textContent = s.clanPct < cfg.minShare ? '0' : 'OK';
+        else if (key === 'reg') live.textContent = rub(cfg.reg);
       });
     }
 
-    function playModeOk(kind) {
-      if (kind === 'brawl' && activePlayMode === 'tour') return false;
-      if (kind === 'tour' && activePlayMode === 'brawl') return false;
+    function playModeOk(kind, s) {
+      const wp = s?.weekPlan || activeWeekPlan();
+      if (kind === 'brawl') return planHas(wp, 'brawl');
+      if (kind === 'tour') return planHas(wp, 'tour');
+      if (kind === 'base') return planHas(wp, 'base');
       return true;
     }
 
+    function shellSourcesCount(s, c) {
+      return [c.weekBrawl, c.weekTour, c.weekBase].filter(v => v > 0).length;
+    }
+
     function blockVisible(blocks, s) {
-      if (blocks.includes('tierCompare')) {
-        return playModeOk('tour') && s?.tourMode === 'rank';
-      }
-      if (blocks.includes('tour') && !playModeOk('tour')) return false;
+      if (!s) return false;
+      const c = compute(s);
+      if (blocks.includes('mix')) return shellSourcesCount(s, c) >= 2;
+      if (blocks.includes('record')) return playModeOk('tour', s) || playModeOk('base', s);
+      if (blocks.includes('marginal')) return playModeOk('brawl', s);
+      if (blocks.includes('brawlShare')) return playModeOk('brawl', s);
+      if (blocks.includes('tierCompare')) return playModeOk('tour', s) && s.tourMode === 'rank';
+      if (blocks.includes('tour') && !playModeOk('tour', s)) return false;
       return blocks.includes('common') || blocks.includes('tour');
+    }
+
+    function nearestBrawlShare(pct) {
+      return BRAWL_SHARE_SWEEP.reduce((best, p) =>
+        Math.abs(p - pct) < Math.abs(best - pct) ? p : best, BRAWL_SHARE_SWEEP[0]);
+    }
+
+    function brawlShareShellsChartData(s, scope = 'calc', c) {
+      const cc = c || compute(s);
+      const shareLbl = brawlShareLabels();
+      const nearest = nearestBrawlShare(s.clanPct);
+      const stageData = BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100));
+      const dayData = stageData.map(v => v * 3);
+      const weekData = dayData.map(v => v * cc.bd);
+      const isLine = chartScopeType(scope) === 'line';
+      const isArea = chartViewIsArea(scope);
+      if (isLine || isArea) {
+        return {
+          labels: shareLbl,
+          datasets: [
+            lineDataset('Гильзы / этап', stageData, 'shells', { fill: false }),
+            lineDataset('Гильзы / день', dayData, 'brawl', { fill: isArea }),
+            lineDataset('Гильзы / неделя', weekData, 'accent', { fill: isArea }),
+          ],
+        };
+      }
+      return {
+        labels: shareLbl,
+        datasets: [
+          barDataset('Гильзы / неделя', weekData, BRAWL_SHARE_SWEEP.map(p =>
+            p === nearest ? chartColor('accent') : chartColor('shells', 'barSoft'))),
+        ],
+      };
+    }
+
+    function brawlShareChartOptions(scope = 'calc') {
+      const isArea = chartViewIsArea(scope);
+      return makeChartOptions({
+        legend: chartLegend(true, scope),
+        barLabels: { force: !isArea && chartScopeType(scope) !== 'line' },
+        scales: {
+          x: { ...chartOpts.scales.x, ticks: scaleTicksPct() },
+          y: { ...chartOpts.scales.y, stacked: false },
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: items => items[0]?.label || '',
+              label(ctx) {
+                const pct = BRAWL_SHARE_SWEEP[ctx.dataIndex];
+                const stage = brawlStage(pct, 100);
+                if (ctx.dataset.label?.includes('неделя') || (!chartViewIsArea(scope) && ctx.datasetIndex === 0)) {
+                  return `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('ru')} (этап ${stage})`;
+                }
+                return `${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('ru')}`;
+              },
+            },
+          },
+        },
+      });
     }
 
     function syncPlayModeBlocks(s) {
@@ -1298,13 +1606,15 @@
         {lbl:'Турнир / день · гильзы',val:c.tp,panels:['calc'],kind:'tour'},
         {lbl:'Турнир / день · казна',val:c.tt,panels:['calc','clan'],kind:'tour'},
         {lbl:'Потасовки / нед',val:c.weekBrawl,panels:['calc'],kind:'brawl'},
+        {lbl:'Базы / день',val:c.bps,panels:['calc'],kind:'base'},
+        {lbl:'Базы / нед',val:c.weekBase,panels:['calc'],kind:'base'},
         {lbl:'Турнир / нед · гильзы',val:c.weekTour,panels:['calc'],kind:'tour'},
         {lbl:'Турнир / нед · казна',val:c.weekTourTreasury,panels:['calc','clan'],kind:'tour'},
         {lbl:'Регистрации / нед',val:c.regTotal,panels:['calc','clan'],kind:'both'},
         {lbl:'Казна / нед',val:c.weekTreasuryNet,panels:['calc','clan'],kind:'both'},
         {lbl:'Итого гильз',val:c.weekTotal,total:true,panels:['calc','clan'],kind:'both'},
       ];
-      const items = all.filter(x => x.panels.includes(panel) && playModeOk(x.kind));
+      const items = all.filter(x => x.panels.includes(panel) && playModeOk(x.kind, s));
       $('calcGrid').innerHTML=items.map(x=>`<div class="calc-item${x.total?' total':''}${x.exp?' exp':''}">
         <div class="lbl">${x.lbl}</div><div class="val">${typeof x.val==='number'?x.val.toLocaleString('ru'):x.val}</div></div>`).join('');
     }
@@ -1315,10 +1625,12 @@
         ['Неделя',c.weekTotal,'гильз','both'],
         ['Турнир',c.tp,RECORD_LABELS[s.tourDay],'tour'],
         ['Потасовки',c.bp,`${rub(c.bt*3)}/день`,'brawl'],
+        ['Базы',c.bps,`${rub(c.btt)}/день`,'base'],
         ['Казна',c.weekTreasuryNet.toLocaleString('ru'),'₽','both'],
       ].filter(([,,,kind])=>{
-        if (kind === 'tour') return playModeOk('tour');
-        if (kind === 'brawl') return playModeOk('brawl');
+        if (kind === 'tour') return playModeOk('tour', s);
+        if (kind === 'brawl') return playModeOk('brawl', s);
+        if (kind === 'base') return playModeOk('base', s);
         return true;
       });
       $('kpis').innerHTML=rows.map(([k,v,u],i)=>`<div class="kpi${i===0?' hl':''}"><div class="k">${k}</div>
@@ -1326,33 +1638,37 @@
     }
 
     function renderBrawlRows(s, c) {
+      const cfg = BRAWL_LAB;
+      const p = s.clanPct;
       $('brawlRows').innerHTML = `
         <tr><th>Статья</th><th class="num">Этап</th><th class="num">День</th><th class="num">Неделя</th></tr>
         <tr><td>Гильзы игроку</td><td class="num">${c.bs}</td><td class="num">${c.bp}</td><td class="num">${c.weekBrawl}</td></tr>
         <tr><td>Казна клана</td><td class="num">${rub(c.bt)}</td><td class="num">${rub(c.bt * 3)}</td><td class="num">${rub(c.weekBrawlTreasury)}</td></tr>
-        <tr><td>Влияние</td><td class="num">${brawlClanInfluence(s.clanPct)}</td><td class="num">${brawlClanInfluence(s.clanPct) * 3}</td><td class="num">${brawlClanInfluence(s.clanPct) * 3 * c.bd}</td></tr>
-        <tr><td>Батареи</td><td class="num">${brawlClanBatteries(s.clanPct)}</td><td class="num">${brawlClanBatteries(s.clanPct) * 3}</td><td class="num">${brawlClanBatteries(s.clanPct) * 3 * c.bd}</td></tr>
-        <tr><td>Рыжий Папоротник</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'fern') * 3 * c.bd}</td></tr>
-        <tr><td>Вещество</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'substance') * 3 * c.bd}</td></tr>
-        <tr><td>Остатки Пси-Маячка</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'psiBeacon') * 3 * c.bd}</td></tr>
-        <tr><td>Гамма</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma')}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma') * 3}</td><td class="num">${brawlClanPoolShare(s.clanPct, 'gamma') * 3 * c.bd}</td></tr>`;
+        <tr><td>Влияние</td><td class="num">${brawlClanInfluence(p, cfg)}</td><td class="num">${brawlClanInfluence(p, cfg) * 3}</td><td class="num">${brawlClanInfluence(p, cfg) * 3 * c.bd}</td></tr>
+        <tr><td>Батареи</td><td class="num">${brawlClanBatteries(p, cfg)}</td><td class="num">${brawlClanBatteries(p, cfg) * 3}</td><td class="num">${brawlClanBatteries(p, cfg) * 3 * c.bd}</td></tr>
+        <tr><td>Рыжий Папоротник</td><td class="num">${brawlClanPoolShare(p, 'fern', cfg)}</td><td class="num">${brawlClanPoolShare(p, 'fern', cfg) * 3}</td><td class="num">${brawlClanPoolShare(p, 'fern', cfg) * 3 * c.bd}</td></tr>
+        <tr><td>Вещество</td><td class="num">${brawlClanPoolShare(p, 'substance', cfg)}</td><td class="num">${brawlClanPoolShare(p, 'substance', cfg) * 3}</td><td class="num">${brawlClanPoolShare(p, 'substance', cfg) * 3 * c.bd}</td></tr>
+        <tr><td>Остатки Пси-Маячка</td><td class="num">${brawlClanPoolShare(p, 'psiBeacon', cfg)}</td><td class="num">${brawlClanPoolShare(p, 'psiBeacon', cfg) * 3}</td><td class="num">${brawlClanPoolShare(p, 'psiBeacon', cfg) * 3 * c.bd}</td></tr>
+        <tr><td>Гамма</td><td class="num">${brawlClanPoolShare(p, 'gamma', cfg)}</td><td class="num">${brawlClanPoolShare(p, 'gamma', cfg) * 3}</td><td class="num">${brawlClanPoolShare(p, 'gamma', cfg) * 3 * c.bd}</td></tr>`;
     }
 
     function renderBrawlCompare(s) {
-      const oldM = brawlMetrics(BRAWL_OLD, s.clanPct, 100, 3);
-      const newM = brawlMetrics(OFFICIAL.brawl, s.clanPct, 100, 3);
+      const cfg = BRAWL_LAB;
+      const c = computeBrawlLab(s);
+      const oldM = brawlMetrics(BRAWL_OLD, s.clanPct, 100, c.bd);
+      const newM = brawlMetrics(cfg, s.clanPct, 100, c.bd);
       const rows = [
-        ['Банк гильз / этап', BRAWL_OLD.pool.shells, OFFICIAL.brawl.pool.shells, false],
-        ['Казна банк / этап', BRAWL_OLD.pool.treasury, OFFICIAL.brawl.pool.treasury, true],
-        ['Влияние банк / этап', BRAWL_OLD.pool.influence, OFFICIAL.brawl.pool.influence, false],
-        ['Батареи банк / этап', BRAWL_OLD.pool.batteries, OFFICIAL.brawl.pool.batteries, false],
-        ['Рыжий Папоротник / этап', BRAWL_OLD.pool.fern, OFFICIAL.brawl.pool.fern, false],
-        ['Вещество / этап', BRAWL_OLD.pool.substance, OFFICIAL.brawl.pool.substance, false],
-        ['Остатки Пси-Маячка / этап', BRAWL_OLD.pool.psiBeacon, OFFICIAL.brawl.pool.psiBeacon, false],
-        ['Гамма / этап', BRAWL_OLD.pool.gamma, OFFICIAL.brawl.pool.gamma, false],
+        ['Банк гильз / этап', BRAWL_OLD.pool.shells, cfg.pool.shells, false],
+        ['Казна банк / этап', BRAWL_OLD.pool.treasury, cfg.pool.treasury, true],
+        ['Влияние банк / этап', BRAWL_OLD.pool.influence, cfg.pool.influence, false],
+        ['Батареи банк / этап', BRAWL_OLD.pool.batteries, cfg.pool.batteries, false],
+        ['Рыжий Папоротник / этап', BRAWL_OLD.pool.fern, cfg.pool.fern, false],
+        ['Вещество / этап', BRAWL_OLD.pool.substance, cfg.pool.substance, false],
+        ['Остатки Пси-Маячка / этап', BRAWL_OLD.pool.psiBeacon, cfg.pool.psiBeacon, false],
+        ['Гамма / этап', BRAWL_OLD.pool.gamma, cfg.pool.gamma, false],
         ['Гильзы игроку / этап', oldM.bs, newM.bs, false],
         ['Гильзы / день (×3)', oldM.bp, newM.bp, false],
-        ['Гильзы / неделя (Пн–Ср)', oldM.weekShells, newM.weekShells, false],
+        [`Гильзы / неделя (${c.bd} дн.)`, oldM.weekShells, newM.weekShells, false],
         ['Казна / этап', oldM.bt, newM.bt, true],
         ['Казна / день', oldM.dayTreasury, newM.dayTreasury, true],
         ['Казна валовая / нед', oldM.weekTreasury, newM.weekTreasury, true],
@@ -1372,6 +1688,7 @@
     function brawlShareLabels() { return BRAWL_SHARE_SWEEP.map(p => p + '%'); }
 
     function brawlWeekResources(s, c) {
+      const cfg = BRAWL_LAB;
       const d = c.bd || 3;
       const p = s.clanPct;
       return {
@@ -1380,31 +1697,35 @@
         values: [
           c.weekBrawl,
           c.weekBrawlTreasury / 1000,
-          brawlClanInfluence(p) * 3 * d,
-          brawlClanBatteries(p) * 3 * d,
-          brawlClanPoolShare(p, 'fern') * 3 * d,
-          brawlClanPoolShare(p, 'substance') * 3 * d,
-          brawlClanPoolShare(p, 'psiBeacon') * 3 * d,
-          brawlClanPoolShare(p, 'gamma') * 3 * d,
+          brawlClanInfluence(p, cfg) * 3 * d,
+          brawlClanBatteries(p, cfg) * 3 * d,
+          brawlClanPoolShare(p, 'fern', cfg) * 3 * d,
+          brawlClanPoolShare(p, 'substance', cfg) * 3 * d,
+          brawlClanPoolShare(p, 'psiBeacon', cfg) * 3 * d,
+          brawlClanPoolShare(p, 'gamma', cfg) * 3 * d,
         ],
       };
     }
 
     function renderBrawlCharts(s, c) {
+      const cfg = BRAWL_LAB;
       const brawlType = chartScopeType('brawl');
+      const isArea = chartViewIsArea('brawl');
       const shareLbl = brawlShareLabels();
       const brawlScaleY = { y: { ...chartOpts.scales.y, ticks: scaleTicksK() } };
+      const pctScales = { x: { ...chartOpts.scales.x, ticks: scaleTicksPct() } };
       renderBrawlEconLive(s);
 
-      const shellsDs = chartScopeType('brawl') === 'line'
-        ? lineDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)), 'shells')
-        : barDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100)), BRAWL_SHARE_SWEEP.map(p =>
-          Math.round(p) === Math.round(s.clanPct) ? chartColor('accent') : chartColor('shells', 'barSoft')));
+      const nearest = nearestBrawlShare(s.clanPct);
+      const shellsDs = chartScopeType('brawl') === 'line' || isArea
+        ? lineDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100, cfg)), 'shells', { fill: isArea })
+        : barDataset('Гильзы / этап', BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100, cfg)), BRAWL_SHARE_SWEEP.map(p =>
+          p === nearest ? chartColor('accent') : chartColor('shells', 'barSoft')));
 
       setChart('chartBrawlAnShells', {
         type: brawlType,
         data: { labels: shareLbl, datasets: [shellsDs] },
-        options: makeChartOptions({ legend: chartLegend(false, 'brawl') }),
+        options: brawlLabChartOpts({ scales: pctScales }),
       });
 
       setChart('chartBrawlAnClan', {
@@ -1412,11 +1733,11 @@
         data: {
           labels: shareLbl,
           datasets: [
-            makeSoftSeries('Казна, тыс ₽', BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p) / 1000), 'treasury', 'brawl'),
-            makeSoftSeries('Влияние', BRAWL_SHARE_SWEEP.map(p => brawlClanInfluence(p)), 'influence', 'brawl'),
+            makeSoftSeries('Казна, тыс ₽', BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p, cfg) / 1000), 'treasury', 'brawl'),
+            makeSoftSeries('Влияние', BRAWL_SHARE_SWEEP.map(p => brawlClanInfluence(p, cfg)), 'influence', 'brawl'),
           ],
         },
-        options: makeChartOptions({ legend: chartLegend('multi', 'brawl'), scales: brawlScaleY }),
+        options: brawlLabChartOpts({ legend: chartLegend('multi', 'brawl'), scales: { ...pctScales, ...brawlScaleY } }),
       });
 
       setChart('chartBrawlAnMats', {
@@ -1424,13 +1745,22 @@
         data: {
           labels: shareLbl,
           datasets: [
-            makeSoftSeries('Папоротник', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'fern')), 'fern', 'brawl'),
-            makeSoftSeries('Вещество', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'substance')), 'substance', 'brawl'),
-            makeSoftSeries('Пси-Маячок', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'psiBeacon')), 'psi', 'brawl'),
-            makeSoftSeries('Гамма', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'gamma')), 'gamma', 'brawl'),
+            makeSoftSeries('Папоротник', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'fern', cfg)), 'fern', 'brawl'),
+            makeSoftSeries('Вещество', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'substance', cfg)), 'substance', 'brawl'),
+            makeSoftSeries('Пси-Маячок', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'psiBeacon', cfg)), 'psi', 'brawl'),
+            makeSoftSeries('Гамма', BRAWL_SHARE_SWEEP.map(p => brawlClanPoolShare(p, 'gamma', cfg)), 'gamma', 'brawl'),
           ],
         },
-        options: makeChartOptions({ legend: chartLegend('multi', 'brawl') }),
+        options: brawlLabChartOpts({ legend: chartLegend('multi', 'brawl'), scales: pctScales }),
+      });
+
+      setChart('chartBrawlAnTreasury', {
+        type: brawlType,
+        data: {
+          labels: shareLbl,
+          datasets: [makeSeries('Казна / этап, тыс ₽', BRAWL_SHARE_SWEEP.map(p => brawlClanTreasury(p, cfg) / 1000), 'treasury', 'brawl', { fill: isArea })],
+        },
+        options: brawlLabChartOpts({ scales: { ...pctScales, ...brawlScaleY } }),
       });
 
       const weekRes = brawlWeekResources(s, c);
@@ -1439,10 +1769,9 @@
         skipMorph: true,
         data: {
           labels: weekRes.labels,
-          datasets: [barDataset(`Пн–Ср · ${s.clanPct}%`, weekRes.values, weekRes.keys.map(k => chartColor(k)))],
+          datasets: [barDataset(`Неделя · ${s.clanPct}%`, weekRes.values, weekRes.keys.map(k => chartColor(k)))],
         },
-        options: makeChartOptions({
-          legend: chartLegend(false),
+        options: brawlLabChartOpts({
           scales: brawlScaleY,
           plugins: {
             tooltip: {
@@ -1459,16 +1788,66 @@
         }),
       });
 
+      const daySplit = brawlLabDaySplit(s, c);
+      setChart('chartBrawlAnDaySplit', {
+        type: brawlType,
+        data: {
+          labels: daySplit.labels,
+          datasets: [makeSeries('Гильзы / день', daySplit.values, 'brawl', 'brawl')],
+        },
+        options: brawlLabChartOpts({ legend: chartLegend(false, 'brawl') }),
+      });
+
+      const pace = brawlPaceTimeline(s, cfg);
+      const paceDs = [
+        makeSeries('За этап', pace.perStage, 'shells', 'brawl'),
+        lineDataset('Накоплено', pace.cumulative, 'accent', { fill: isArea }),
+      ];
       setChart('chartBrawlAnPace', {
         type: brawlType,
-        skipMorph: chartScopeType('brawl') === 'line',
+        data: { labels: pace.labels, datasets: paceDs },
+        options: brawlLabChartOpts({
+          legend: chartLegend('multi', 'brawl'),
+          barLabels: { force: brawlType === 'bar' },
+        }),
+      });
+
+      const weekByPct = BRAWL_SHARE_SWEEP.map(p => brawlStage(p, 100, cfg) * 3 * c.bd);
+      setChart('chartBrawlAnCumulPct', {
+        type: brawlType,
         data: {
-          labels: ['Этап', 'День ×3', 'Неделя Пн–Ср'],
-          datasets: [makeSeries('Гильзы', [c.bs, c.bp, c.weekBrawl], 'shells', 'brawl', {
-            backgroundColor: [chartColor('shells', 'barSoft'), chartColor('shells', 'bar'), chartColor('accent')],
-          })],
+          labels: shareLbl,
+          datasets: [lineDataset('Гильзы / неделя', weekByPct, 'accent', { fill: isArea })],
         },
-        options: makeChartOptions({ legend: chartLegend(false, 'brawl'), barLabels: { force: true } }),
+        options: brawlLabChartOpts({ scales: pctScales }),
+      });
+
+      const mg = brawlLabMarginalData(s, cfg);
+      setChart('chartBrawlAnMarginal', {
+        type: brawlType,
+        data: {
+          labels: mg.labels,
+          datasets: [makeSeries('Δ гильз / нед', mg.gains, 'shells', 'brawl')],
+        },
+        options: brawlLabChartOpts({
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label(ctx) {
+                  return `+${Number(ctx.raw).toLocaleString('ru')} г · ${mg.bd} дн.`;
+                },
+              },
+            },
+          },
+        }),
+      });
+
+      const pool = brawlLabPoolSlice(s, cfg);
+      setChart('chartBrawlAnPool', {
+        type: 'doughnut',
+        skipMorph: true,
+        data: doughnutData(pool.values, pool.labels, pool.keys.map(k => chartColor(k))),
+        options: { ...pieOpts, plugins: { ...pieOpts.plugins, legend: { ...pieOpts.plugins.legend, position: 'bottom' } } },
       });
 
       const deltaKeys = [
@@ -1477,7 +1856,7 @@
       ];
       const deltaVals = deltaKeys.map(([, k]) => {
         const o = BRAWL_OLD.pool[k] || 0;
-        const n = OFFICIAL.brawl.pool[k] || 0;
+        const n = cfg.pool[k] || 0;
         if (!o) return n ? 100 : 0;
         return ((n - o) / o) * 100;
       });
@@ -1500,7 +1879,7 @@
 
     function renderBrawlPanel() {
       const s = brawlPanelState();
-      const c = compute(s);
+      const c = computeBrawlLab(s);
       renderBrawlCompare(s);
       renderBrawlRows(s, c);
       renderBrawlCharts(s, c);
@@ -1509,56 +1888,144 @@
     function renderTables(s,c){
       $('clanTable').innerHTML=`
         <tr><th>Статья</th><th class="num">₽</th></tr>
-        ${playModeOk('brawl') && c.bd ? `<tr><td class="in">Потасовки</td><td class="num in">+${c.weekBrawlTreasury.toLocaleString('ru')}</td></tr>` : ''}
-        ${playModeOk('tour') && c.td ? `<tr><td class="in">Турнир</td><td class="num in">+${c.weekTourTreasury.toLocaleString('ru')}</td></tr>` : ''}
+        ${playModeOk('brawl', s) && c.bd ? `<tr><td class="in">Потасовки</td><td class="num in">+${c.weekBrawlTreasury.toLocaleString('ru')}</td></tr>` : ''}
+        ${playModeOk('tour', s) && c.td ? `<tr><td class="in">Турнир</td><td class="num in">+${c.weekTourTreasury.toLocaleString('ru')}</td></tr>` : ''}
+        ${playModeOk('base', s) && c.bsd ? `<tr><td class="in">Захваты баз</td><td class="num in">+${c.weekBaseTreasury.toLocaleString('ru')}</td></tr>` : ''}
         <tr><td class="out">Регистрации</td><td class="num out">−${c.regTotal.toLocaleString('ru')}</td></tr>
         <tr><td><strong>Баланс</strong></td><td class="num"><strong>${c.weekTreasuryNet.toLocaleString('ru')}</strong></td></tr>`;
       $('regTable').innerHTML=`
         <tr><th>Статья</th><th class="num">₽</th></tr>
         ${c.bd?`<tr><td>Потасовки ×${c.bd}</td><td class="num">${(OFFICIAL.brawl.reg*c.bd).toLocaleString('ru')}</td></tr>`:''}
         ${c.td?`<tr><td>Турнир ×${c.td}</td><td class="num">${(OFFICIAL.tour.reg*c.td).toLocaleString('ru')}</td></tr>`:''}
+        ${c.bsd?`<tr><td>Базы ×${c.bsd}</td><td class="num">${(OFFICIAL.base.reg*c.bsd).toLocaleString('ru')}</td></tr>`:''}
         <tr><td><strong>Итого</strong></td><td class="num"><strong>${c.regTotal.toLocaleString('ru')}</strong></td></tr>`;
+    }
+
+    function marginalClanGainData(s) {
+      const c = compute(s);
+      const bd = c.bd || 0;
+      const labels = [], gains = [];
+      for (let i = 1; i < BRAWL_SHARE_SWEEP.length; i++) {
+        const prev = BRAWL_SHARE_SWEEP[i - 1], cur = BRAWL_SHARE_SWEEP[i];
+        labels.push(`${prev}→${cur}%`);
+        gains.push((brawlStage(cur, 100) - brawlStage(prev, 100)) * 3 * bd);
+      }
+      return { labels, gains, bd };
     }
 
     function renderCharts(s,c){
       const tc=s.tourMode==='off'?chartColor('influence'):tierColor(s.tourRank);
-      const stacked = playModeOk('brawl') && playModeOk('tour');
+      const sourceCount = shellSourcesCount(s, c);
+      const stacked = sourceCount >= 2;
+      const isArea = chartViewIsArea('calc');
       const weeklyDs = [];
-      if (playModeOk('brawl')) weeklyDs.push({ ...barDataset('Потасовки', c.brawlPart, 'brawl'), stack: 's' });
-      if (playModeOk('tour')) weeklyDs.push({
+      if (playModeOk('brawl', s)) weeklyDs.push({ ...barDataset('Потасовки', c.brawlPart, 'brawl'), stack: 's', colorKey: 'brawl' });
+      if (playModeOk('tour', s)) weeklyDs.push({
         label: 'Турнир',
         data: c.tourPart,
         backgroundColor: c.tourPart.map(() => tc + CHART_THEME.alpha.bar),
+        borderColor: tc,
         borderWidth: CHART_THEME.bar.borderWidth,
         borderRadius: CHART_THEME.bar.borderRadius,
         stack: 's',
       });
+      if (playModeOk('base', s)) weeklyDs.push({ ...barDataset('Базы', c.basePart, 'base'), stack: 's', colorKey: 'base' });
       setChart('chartWeekly', {
         type: 'bar',
         data: {
           labels: DAYS,
-          datasets: weeklyDs.length ? weeklyDs : [barDataset('Гильзы', c.total, tc)],
+          datasets: weeklyDs.length ? weeklyDs : [barDataset('Гильзы', c.total, tc, { colorKey: 'shells' })],
         },
         options: makeChartOptions({
           legend: chartLegend(weeklyDs.length > 1, 'calc'),
-          barLabels: { force: true },
+          barLabels: { force: !isArea },
           scales: {
-            x: { ...chartOpts.scales.x, stacked },
-            y: { ...chartOpts.scales.y, stacked },
+            x: { ...chartOpts.scales.x, stacked: stacked || isArea },
+            y: { ...chartOpts.scales.y, stacked: stacked || isArea },
           },
         }),
       });
       let cum=0;
       const cumulData = c.total.map(v => (cum += v));
+      const cumulKey = s.tourMode === 'off' ? 'influence' : 'accent';
       setChart('chartCumul', {
         type: 'line',
         data: {
           labels: DAYS,
-          datasets: [lineDataset('Накоплено', cumulData, s.tourMode === 'off' ? 'influence' : 'accent', { fill: true, borderColor: tc, backgroundColor: tc + CHART_THEME.alpha.lineArea, pointBackgroundColor: tc, pointBorderColor: tc })],
+          datasets: [lineDataset('Накоплено', cumulData, cumulKey, {
+            fill: true,
+            borderColor: tc,
+            backgroundColor: tc + CHART_THEME.alpha.lineArea,
+            pointBackgroundColor: tc,
+            pointBorderColor: tc,
+          })],
         },
-        options: makeChartOptions({ legend: chartLegend(false), barLabels: { force: true } }),
+        options: makeChartOptions({ legend: chartLegend(false, 'calc'), barLabels: { force: !isArea } }),
       });
-      if (playModeOk('tour') && s.tourMode === 'rank') {
+      if (shellSourcesCount(s, c) >= 2) {
+        const mixVals = [c.weekBrawl, c.weekTour, c.weekBase].filter(v => v > 0);
+        const mixLabs = [
+          c.weekBrawl ? 'Потасовки' : null,
+          c.weekTour ? 'Турнир' : null,
+          c.weekBase ? 'Базы' : null,
+        ].filter(Boolean);
+        const mixCols = [
+          c.weekBrawl ? chartColor('brawl') : null,
+          c.weekTour ? tc : null,
+          c.weekBase ? chartColor('base') : null,
+        ].filter(Boolean);
+        setChart('chartMix', {
+          type: 'doughnut',
+          skipMorph: true,
+          data: doughnutData(mixVals, mixLabs, mixCols),
+          options: { ...pieOpts, plugins: { ...pieOpts.plugins, legend: { ...pieOpts.plugins.legend, position: 'bottom' } } },
+        });
+      }
+      if (playModeOk('tour', s) || playModeOk('base', s)) {
+        const recVals = RECORD_KEYS.map(key => compute({ ...s, tourDay: key }).weekTotal);
+        const selIdx = RECORD_KEYS.indexOf(s.tourDay);
+        setChart('chartRecord', {
+          type: chartScopeType('calc'),
+          data: {
+            labels: RECORD_KEYS.map(k => RECORD_LABELS[k]),
+            datasets: [barDataset('Гильзы / неделя', recVals, RECORD_KEYS.map((_, i) =>
+              chartColor(i === selIdx ? 'accent' : 'muted', i === selIdx ? 'bar' : 'barSoft')))],
+          },
+          options: makeChartOptions({
+            legend: chartLegend(false, 'calc'),
+            barLabels: { force: chartScopeType('calc') !== 'line' },
+          }),
+        });
+      }
+      if (playModeOk('brawl', s)) {
+        setChart('chartBrawlShare', {
+          type: chartScopeType('calc'),
+          data: brawlShareShellsChartData(s, 'calc', c),
+          options: brawlShareChartOptions('calc'),
+        });
+        const mg = marginalClanGainData(s);
+        setChart('chartMarginal', {
+          type: chartScopeType('calc'),
+          data: {
+            labels: mg.labels,
+            datasets: [makeSeries('Δ гильз / нед', mg.gains, 'shells', 'calc')],
+          },
+          options: makeChartOptions({
+            legend: chartLegend(false, 'calc'),
+            barLabels: { force: chartScopeType('calc') !== 'line' },
+            plugins: {
+              tooltip: {
+                callbacks: {
+                  label(ctx) {
+                    return `+${Number(ctx.raw).toLocaleString('ru')} г · ${mg.bd} дн. потасовок`;
+                  },
+                },
+              },
+            },
+          }),
+        });
+      }
+      if (playModeOk('tour', s) && s.tourMode === 'rank') {
         const tierVals = TIERS.map(r => weekTotalForTier(s, r));
         const selIdx = TIERS.indexOf(s.tourRank);
         const base = tierVals[selIdx] || 1;
@@ -1592,7 +2059,7 @@
           type: 'bar',
           data: {
             labels: ['Доход', 'Расход', 'Баланс'],
-            datasets: [barDataset('Казна', [c.weekBrawlTreasury + c.weekTourTreasury, c.regTotal, c.weekTreasuryNet], ['win', 'lose', 'treasury'].map(k => chartColor(k)))],
+            datasets: [barDataset('Казна', [c.weekBrawlTreasury + c.weekTourTreasury + c.weekBaseTreasury, c.regTotal, c.weekTreasuryNet], ['win', 'lose', 'treasury'].map(k => chartColor(k)))],
           },
           options: makeChartOptions({ legend: chartLegend(false) }),
         });
@@ -1637,26 +2104,33 @@
       }
     });
     $('tourMode').addEventListener('change',()=>{ if ($('tourMode').value==='off') tierSelected=true; onChange(); });
+    function syncClanPctFrom(el) {
+      applyClanPctClamp(el);
+      const v = el.value;
+      if (el.id === 'clanPctLab' && $('clanPct')) { $('clanPct').value = v; applyClanPctClamp($('clanPct')); }
+      if (el.id === 'clanPct' && $('clanPctLab')) { $('clanPctLab').value = v; applyClanPctClamp($('clanPctLab')); }
+      saveBrawlSettingsDebounced();
+      onChange();
+    }
     ['tourDay','clanPct','clanPctLab'].forEach(id=>{
       const el=$(id);
       if (!el) return;
-      el.addEventListener('change', () => {
-        if (id === 'clanPctLab' && $('clanPct')) $('clanPct').value = el.value;
-        if (id === 'clanPct' && $('clanPctLab')) $('clanPctLab').value = el.value;
-        if (id === 'clanPct' || id === 'clanPctLab') saveBrawlSettingsDebounced();
-        onChange();
-      });
-      el.addEventListener('input', () => {
-        if (id === 'clanPctLab' && $('clanPct')) $('clanPct').value = el.value;
-        if (id === 'clanPct' && $('clanPctLab')) $('clanPctLab').value = el.value;
-        if (id === 'clanPct' || id === 'clanPctLab') saveBrawlSettingsDebounced();
-        onChange();
-      });
+      if (id === 'clanPct' || id === 'clanPctLab') {
+        el.addEventListener('change', () => syncClanPctFrom(el));
+        el.addEventListener('input', () => {
+          if (+el.value > 100) el.value = 100;
+          if (+el.value < 0 && el.value !== '' && el.value !== '-') el.value = 0;
+          syncClanPctFrom(el);
+        });
+        return;
+      }
+      el.addEventListener('change', onChange);
+      el.addEventListener('input', onChange);
     });
 
     loadBrawlSettings();
     buildTierBar(); buildBrawlEconTable(); initChartTypeToggles();
-    tierSelected=false; $('tourRank').value='C'; activePlayMode='both';
+    tierSelected=false; $('tourRank').value='C'; activePlayMode=DEFAULT_PLAY_MODE;
     syncLayout('overview'); fullRender();
   </script>
 </body>
